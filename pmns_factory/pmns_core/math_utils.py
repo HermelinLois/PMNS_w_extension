@@ -3,8 +3,6 @@
 # Generic math functions for PMNS parameter generation
 # ==================================================
 
-from sage.all import Integer, gcd
-
 def square_and_multiply(base, exponent, mod=None):
     """
     Compute base raised to the power of exponent efficiently with modulus.
