@@ -15,7 +15,7 @@ def square_and_multiply(base, exponent, mod=None):
         mad : the modulus
 
     Returns:
-        result (same type as base) : value of base ** exponent
+        result (same type as base) : value of base ** exponent % mod
     """
     result = 1
     while exponent:
