@@ -7,6 +7,8 @@
 from sage.all import matrix, ZZ, PolynomialRing
 from math_utils import square_and_multiply
 
+PR = PolynomialRing(ZZ, "X")
+
 def gen_reduce_null_base(k:int, p:int, n:int, gamma):
     """
     Generate a reduced base of null polynomial for gamma.
@@ -49,7 +51,6 @@ def gen_overflow_matrix(pol_e):
         matrix (ZZ): matrix representing the reduction of X^(n+i) modulo pol_e
     """
     n = pol_e.degree()
-    PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
     matrix_coefficients = []
@@ -76,7 +77,6 @@ def gen_external_reduction_matrix(pol_m, pol_e, phi: int):
         mat_n (matrix): matrix representing N = -pol_m^(-1) modulo phi
     """
     n = pol_e.degree()
-    PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
     matrix_coefficients = []

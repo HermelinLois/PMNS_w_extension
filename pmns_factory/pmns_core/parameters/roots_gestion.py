@@ -7,13 +7,15 @@
 from sage.all import Integer, gcd, matrix, GF, PolynomialRing
 from math_utils import square_and_multiply
 
-def is_gamma_feasible(p, k) -> bool:
+PR = PolynomialRing(K,"X")
+
+def is_gamma_feasible(p:int, k:int) -> bool:
     """
     Check if a suitable gamma possibly exist for PMNS construction
     
     Args:
-        p (int, Integer): prime use to construct field
-        k (int, Integer): extension degree use to field
+        p (int): prime use to construct field
+        k (int): extension degree use to field
 
     Returns:
         bool: return True if there possibly exist gamma such that
@@ -128,7 +130,6 @@ def search_roots(p:int, k:int, pol_e) -> list:
     K = GF(p**k)
     
     # create polynomial space
-    PR = PolynomialRing(K,"X")
     X = PR("X")
     
     # cast pol_e to the extension field

@@ -238,7 +238,7 @@ def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
         phi (int): word size bound (ex: 2**63)
         max_add_coef (int): minimal value add to coefficient after internal reduction with initial parameters
         
-        exemple : E = X^n - alpha X^k - beta => max_add_coef can be approximate by alpha + beta + alpha(alpha + beta)
+        exemple : E = X^n - alpha X^k - beta => max_add_coef can be approximate by  beta + alpha(alpha + beta)
 
     Returns:
         int: return a degree n minimal for wich we can possibly construct a PMNS

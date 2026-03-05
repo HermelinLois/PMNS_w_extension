@@ -8,6 +8,8 @@
 from sage.all import vector, matrix, PolynomialRing, ZZ
 from reductions.montgomery_reduction import montgomery_reduction
 
+PR = PolynomialRing(ZZ, "X")
+
 def gen_gamma_base(gamma, k: int) -> matrix:
     """
     Generate base of extension field using powers of gamma.
@@ -37,7 +39,7 @@ def convert_element_to_polynomial(element, gamma_base: matrix):
     target_values = vector(element._vector_())
     gamma_decomposition = gamma_base.solve_right(target_values)
 
-    PR = PolynomialRing(ZZ, "X")
+    PR = PR("X")
     polynomial_of_element = PR(list(gamma_decomposition))
 
     # gamma_base[1] corresponds to gamma^1
