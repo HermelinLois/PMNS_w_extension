@@ -4,7 +4,7 @@
 # PMNS construction
 # ==================================================
 
-from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd
+from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp
 from pmns_factory.pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
 from pmns_factory.pmns_core.math_utils import square_and_multiply
 
@@ -225,3 +225,38 @@ def search_m_and_n(k: int, p: int, gamma, base, phi: int, pol_e):
     N = PR([(-d_inv * c) % phi for c in u.list()])
 
     return M, N
+
+
+
+def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
+    """
+    Function that compute a minimal value of n such that we can possibly construct a PMNS
+
+    Args:
+        p (int): prime used to construction extension field
+        k (int): extension degree
+        phi (int): word size bound (ex: 2**63)
+        max_add_coef (int): minimal value add to coefficient after internal reduction with initial parameters
+        
+        exemple : E = X^n - alpha X^k - beta => max_add_coef can be approximate by alpha + beta + alpha(alpha + beta)
+
+    Returns:
+        int: return a degree n minimal for wich we can possibly construct a PMNS
+    """
+    pbits = p.nbits()
+    n = int(pbits * k / phi.nbits()) + 1
+
+    # compute minimal degree n wich can lead to a possible contruction of PMNS
+    # here :
+    #   > p**(k/n) is due to Minkowski theorem saying that element are upper bound by p^(k/n)
+    #       to avoid problem with high bit prime, we use an approximation of p by a power of 2
+    #   > ceil(n / exp(1)) is due to stirling solving approximation of the hyperspheric condition 
+    #       over the volume of the lattice (V.Pascale, N.Méloni, F.Palma)
+    #   > factor 2 is due to Babai rounding: even with error, factor 2 allows stability for Babai algorithm
+    #   > (max_add_coef*(n - 1) + 1) represent the value of overleaping coefficient after an external reduction 
+    #       of the product of two theoretical PMNS polynomial
+    
+    while round(2**(k * pbits / n) * ceil(n / exp(1)) * 2 * (max_add_coef * (n - 1) + 1)) >= phi:
+        n += 1
+        
+    return n
