@@ -1,6 +1,6 @@
 # ==================================================
 # roots_selection.py
-# Generic functions to select roots of E in extension 
+# Generic functions to select roots of pol_e in extension 
 # field for PMNS construction 
 # ==================================================
 
@@ -44,7 +44,7 @@ def is_root_free(root, k: int, p: int) -> bool:
     exponents greater than k-1.
 
     Args:
-        root(element of the extension field): root of E
+        root(element of the extension field): root of pol_e
         k (int): extension degree of the field
         p (int): prime used to construct the extension field
 
@@ -75,7 +75,7 @@ def is_root_pow_in_base_field(root, k:int, p:int) -> bool:
     """
     Check if root^k is an integer
     Args:
-        root (extension field element): root of E
+        root (extension field element): root of pol_e
         k (int): extension degree of the extension field
         p (int): prime used to construct extension field
 
@@ -95,7 +95,7 @@ def select_roots(roots:list, p:int, k:int):
         > consecutive powers of root from a base of the extension field
 
     Args:
-        roots (list of extension field element): root of E
+        roots (list of extension field element): root of pol_e
         p (int): prime used to construct extension field
         k (int): extension degree of the extension field
 
@@ -111,17 +111,17 @@ def select_roots(roots:list, p:int, k:int):
     return selected_roots
 
 
-def search_roots(p:int, k:int, E) -> list:
+def search_roots(p:int, k:int, pol_e) -> list:
     """
-    Retrieve roots of polynomial E in GF(p^k) suitable for PMNS construction.
+    Retrieve roots of polynomial pol_e in GF(p^k) suitable for PMNS construction.
 
     Args:
         p (int): prime use to create extension field
         k (int): degree of the extension
-        E (polynomial): polynomial use for external reduction in PMNS
+        pol_e (polynomial): polynomial use for external reduction in PMNS
 
     Returns:
-        list (extension field element): roots of E in GF(p^k) suitable for PMNS representation
+        list (extension field element): roots of pol_e in GF(p^k) suitable for PMNS representation
     """
     
     # create extension field
@@ -131,12 +131,12 @@ def search_roots(p:int, k:int, E) -> list:
     PR = PolynomialRing(K,"X")
     X = PR("X")
     
-    # cast E to the extension field
-    E = PR(E)
+    # cast pol_e to the extension field
+    pol_e = PR(pol_e)
 
     # extraction from of roots in extension field
-    null_polynomial = square_and_multiply(X, p**k, E) - X
-    minimal_polynomial = gcd(E, null_polynomial)
+    null_polynomial = square_and_multiply(X, p**k, pol_e) - X
+    minimal_polynomial = gcd(pol_e, null_polynomial)
     
     # Select roots satisfying PMNS conditions
     return select_roots(minimal_polynomial.roots(), p, k)

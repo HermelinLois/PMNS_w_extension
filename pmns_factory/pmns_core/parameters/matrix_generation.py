@@ -1,5 +1,5 @@
 # ==================================================
-# base_generation.py
+# matrix_generation.py
 # Generic functions around matrix used for PMNS construction
 # and C implementation
 # ==================================================
@@ -15,7 +15,7 @@ def gen_reduce_null_base(k:int, p:int, n:int, gamma):
     Args:
         p (int): prime used to construct the extension field
         k (int): extension degree of the field
-        n (int): degree of E used for polynomial reduction in PMNS
+        n (int): degree of pol_e used for polynomial reduction in PMNS
             gamma: element used to construct PMNS (gamma^k is integer)
     
     Returns:
@@ -37,24 +37,24 @@ def gen_reduce_null_base(k:int, p:int, n:int, gamma):
     return base.LLL()
 
 
-def gen_overflow_matrix(n: int, E):
+def gen_overflow_matrix(n: int, pol_e):
     """
-    Create a matrix used to compute the coefficients after reduction modulo E 
-    for powers of X greater or equal than the degree of polynomial E.
+    Create a matrix used to compute the coefficients after reduction modulo pol_e 
+    for powers of X greater or equal than the degree of polynomial pol_e.
 
     Args:
-        n (int): degree of E
-        E (Polynomial): polynomial used for external reduction in PMNS
+        n (int): degree of pol_e
+        pol_e (Polynomial): polynomial used for external reduction in PMNS
 
     Returns:
-        matrix (ZZ): matrix representing the reduction of X^(n+i) modulo E
+        matrix (ZZ): matrix representing the reduction of X^(n+i) modulo pol_e
     """
     PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
     matrix_coefficients = []
     for i in range(n - 1):
-        poly_mod = square_and_multiply(X, n + i, E)
+        poly_mod = square_and_multiply(X, n + i, pol_e)
         # Pad coefficients to length n
         coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
         matrix_coefficients.append(coeffs)
@@ -62,27 +62,27 @@ def gen_overflow_matrix(n: int, E):
     return matrix(ZZ, matrix_coefficients)
 
 
-def gen_external_reduction_matrix(M, E, n: int, phi: int):
+def gen_external_reduction_matrix(pol_m, pol_e, n: int, phi: int):
     """
-    Generate matrices M and N for external reduction in PMNS.
+    Generate matrices pol_m and N for external reduction in PMNS.
 
     Args:
-        M (Polynomial): polynomial null in the chosen root of E
-        E (Polynomial): polynomial used for external reduction
-        n (int): degree of E
+        pol_m (Polynomial): polynomial null in the chosen root of pol_e
+        pol_e (Polynomial): polynomial used for external reduction
+        n (int): degree of pol_e
         phi (int): word size in bits (used for modulo)
 
     Returns:
-        mat_m (matrix): matrix representing M for Montgomery reduction
-        mat_n (matrix): matrix representing N = -M^(-1) modulo phi
+        mat_m (matrix): matrix representing pol_m for Montgomery reduction
+        mat_n (matrix): matrix representing N = -pol_m^(-1) modulo phi
     """
     PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
     matrix_coefficients = []
     for i in range(n):
-        # Compute (M * X^i) % E
-        poly_mod = (M * X**i) % E
+        # Compute (pol_m * X^i) % pol_e
+        poly_mod = (pol_m * X**i) % pol_e
         coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
         matrix_coefficients.append(coeffs)
 
