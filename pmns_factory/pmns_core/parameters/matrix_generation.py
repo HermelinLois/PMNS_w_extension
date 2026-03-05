@@ -37,18 +37,18 @@ def gen_reduce_null_base(k:int, p:int, n:int, gamma):
     return base.LLL()
 
 
-def gen_overflow_matrix(n: int, pol_e):
+def gen_overflow_matrix(pol_e):
     """
     Create a matrix used to compute the coefficients after reduction modulo pol_e 
     for powers of X greater or equal than the degree of polynomial pol_e.
 
     Args:
-        n (int): degree of pol_e
         pol_e (Polynomial): polynomial used for external reduction in PMNS
 
     Returns:
         matrix (ZZ): matrix representing the reduction of X^(n+i) modulo pol_e
     """
+    n = pol_e.degree()
     PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
@@ -62,27 +62,27 @@ def gen_overflow_matrix(n: int, pol_e):
     return matrix(ZZ, matrix_coefficients)
 
 
-def gen_external_reduction_matrix(pol_m, pol_e, n: int, phi: int):
+def gen_external_reduction_matrix(pol_m, pol_e, phi: int):
     """
     Generate matrices pol_m and N for external reduction in PMNS.
 
     Args:
         pol_m (Polynomial): polynomial null in the chosen root of pol_e
         pol_e (Polynomial): polynomial used for external reduction
-        n (int): degree of pol_e
         phi (int): word size in bits (used for modulo)
 
     Returns:
         mat_m (matrix): matrix representing pol_m for Montgomery reduction
         mat_n (matrix): matrix representing N = -pol_m^(-1) modulo phi
     """
+    n = pol_e.degree()
     PR = PolynomialRing(ZZ, "X")
     X = PR("X")
 
     matrix_coefficients = []
     for i in range(n):
         # Compute (pol_m * X^i) % pol_e
-        poly_mod = (pol_m * X**i) % pol_e
+        poly_mod = (pol_m * square_and_multiply(X,i)) % pol_e
         coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
         matrix_coefficients.append(coeffs)
 
