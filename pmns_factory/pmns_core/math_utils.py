@@ -5,46 +5,22 @@
 
 from sage.all import Integer, gcd
 
-def square_and_multiply(base, exponent):
+def square_and_multiply(base, exponent, mod=None):
     """
-    Compute base raised to the power of exponent efficiently.
+    Compute base raised to the power of exponent efficiently with modulus.
 
     Args:
-        base (int, Field element or extension field element) : The base to be exponentiated
-        exponent (int): the exponent
+        base : The base to be exponentiated
+        exponent : the exponent
+        mad : the modulus
 
     Returns:
         result (same type as base) : value of base ** exponent
     """
-    
     result = 1
     while exponent:
         if exponent & 1:
             result *= base
         base = base ** 2
         exponent >>= 1
-    return result
-
-
-def is_gamma_feasible(p, k) -> bool:
-    """
-    Check if a suitable gamma possibly exist for PMNS construction
-    
-    Args:
-        p (int, Integer): prime use to construct field
-        k (int, Integer): extension degree use to field
-
-    Returns:
-        bool: return True if there possibly exist gamma such that
-            gamma isn't an interger and gamma^k is an interger
-    """
-    
-    # Ensure p and k are Sage Integer to handle large primes
-    p, k = Integer(p), Integer(k)
-    
-    # We know that gcd(k, (p^k - 1)/p-1) > 1 to possibly ensure that 
-    # there exist gamma wich are suitable for PMNS construction
-    # Note that (p^k - 1)/(p - 1) is an int because p^k - 1 = (p-1)q with q in N for k in N
-    value = (square_and_multiply(p, k) - 1) // (p-1)    
-    return gcd(k, value) > 1
-    
+    return result if mod is None else result % mod

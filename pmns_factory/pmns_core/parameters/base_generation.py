@@ -4,6 +4,7 @@
 # ==================================================
 
 from sage.all import matrix, ZZ
+from math_utils import square_and_multiply
 
 def gen_reduce_null_base(k:int, p:int, n:int, gamma) -> matrix:
     """
@@ -20,12 +21,13 @@ def gen_reduce_null_base(k:int, p:int, n:int, gamma) -> matrix:
         matrix (LLL) : reduced base where each row evaluates to zero at gamma
     """
 
-    gamma_pow_k = -gamma**k
+    gamma_pow_k = -square_and_multiply(gamma, k)
     base = matrix(ZZ, n, n, 0)
 
     # fill the diagonal
     for i in range(k):
         base[i, i] = p
+        
     for i in range(k, n):
         base[i, i] = 1
         base[i, i-k] = gamma_pow_k
