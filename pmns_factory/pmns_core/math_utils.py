@@ -5,8 +5,6 @@
 
 from sage.all import Integer, gcd
 
-
-
 def square_and_multiply(base, exponent):
     """
     Compute base raised to the power of exponent efficiently.
@@ -43,7 +41,10 @@ def is_gamma_feasible(p, k) -> bool:
     
     # Ensure p and k are Sage Integer to handle large primes
     p, k = Integer(p), Integer(k)
-    value = (square_and_multiply(p, k) - 1) // (p-1)
     
+    # We know that gcd(k, (p^k - 1)/p-1) > 1 to possibly ensure that 
+    # there exist gamma wich are suitable for PMNS construction
+    # Note that (p^k - 1)/(p - 1) is an int because p^k - 1 = (p-1)q with q in N for k in N
+    value = (square_and_multiply(p, k) - 1) // (p-1)    
     return gcd(k, value) > 1
     

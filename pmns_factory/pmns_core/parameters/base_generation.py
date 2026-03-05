@@ -1,3 +1,8 @@
+# ==================================================
+# base_generation.py
+# Generic function for PMNS base generation
+# ==================================================
+
 from sage.all import matrix, ZZ
 
 def gen_reduce_null_base(k:int, p:int, n:int, gamma) -> matrix:
