@@ -1,5 +1,11 @@
+# ==================================================
+# params_generation.py
+# Generic functions around parameters geenration for
+# PMNS construction
+# ==================================================
+
 from sage.all import vector, infinity, ceil, exp
-from matrix_generation import gen_overflow_matrix, gen_reduce_null_base
+from pmns_factory.pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
 
 def search_memory_overhead(pol_e) -> int:
     """
@@ -29,7 +35,7 @@ def search_memory_overhead(pol_e) -> int:
     n = pol_e.degree()
 
     # Overflow matrix
-    epsilon = gen_overflow_matrix(n, pol_e)
+    epsilon = gen_overflow_matrix(pol_e)
 
     # Construct vectors
     v1 = vector(range(1, n + 1))
