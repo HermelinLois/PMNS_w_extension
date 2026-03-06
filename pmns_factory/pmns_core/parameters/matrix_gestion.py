@@ -5,7 +5,7 @@
 # ==================================================
 
 from sage.all import matrix, ZZ, PolynomialRing
-from math_utils import square_and_multiply
+from pmns_core.math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 
@@ -55,7 +55,7 @@ def gen_overflow_matrix(pol_e):
 
     matrix_coefficients = []
     for i in range(n - 1):
-        poly_mod = square_and_multiply(X, n + i, pol_e)
+        poly_mod = X**(n + i) % pol_e
         # Pad coefficients to length n
         coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
         matrix_coefficients.append(coeffs)

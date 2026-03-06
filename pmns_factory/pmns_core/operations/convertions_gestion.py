@@ -6,7 +6,7 @@
 # ==================================================
 
 from sage.all import vector, matrix, PolynomialRing, ZZ
-from reductions.montgomery_reduction import montgomery_reduction
+from pmns_core.operations.reductions.montgomery_reduction import montgomery_reduction
 
 PR = PolynomialRing(ZZ, "X")
 
@@ -39,13 +39,13 @@ def convert_element_to_polynomial(element, gamma_base: matrix):
     target_values = vector(element._vector_())
     gamma_decomposition = gamma_base.solve_right(target_values)
 
-    PR = PR("X")
     polynomial_of_element = PR(list(gamma_decomposition))
 
     # gamma_base[1] corresponds to gamma^1
-    gamma = gamma_base.column(1)
-    assert polynomial_of_element(gamma) == element, \
-        f"error in the construction, polynomial doesn't represent {element=}"
+    K = element.parent()
+    gamma = K(list(gamma_base.column(1)))
+    
+    assert polynomial_of_element(gamma) == element, f"error in the construction, polynomial doesn't represent {element=}"
 
     return polynomial_of_element
 
@@ -62,14 +62,21 @@ def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
     Returns:
         Polynomial: PMNS representation
     """
-    phi, rho, gamma = kwargs['phi'], kwargs['rho'], kwargs['gamma']
+    phi_pow, rho, gamma = kwargs['phi_pow'], kwargs['rho'], kwargs['gamma']
     M, N, E = kwargs['M'], kwargs['N'], kwargs['E']
+
+    # retrieve needed parameters from given elements
+    K = element.parent()
+    gamma = K(list(gamma_base.column(1)))
+
+    # retrieve parameters from given elements
     n = E.degree()
+    phi = 2**phi_pow
 
     alpha = element * phi**n
-    V = convert_element_to_polynomial(alpha, gamma_base)
+    V = convert_element_to_polynomial(alpha, gamma_base)   
 
-    for _ in range(n):
+    for i in range(n):
         V = montgomery_reduction(V, M, N, E, phi)
 
     assert V(gamma) == element, f"polynomial doesn't represent {element=}"

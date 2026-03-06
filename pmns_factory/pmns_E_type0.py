@@ -91,14 +91,12 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
     """
     assert is_gamma_feasible(p, k), "no gamma possibly satisfy the construction"
     assert k > 1, f"extension degree must be at least 2, here {k=}"
-    
-    # compute element and cast them to Integer for method call stability
-    phi = 2**phi_pow
-    p, k, phi = map(Integer, [p, k, phi])
 
+    p = Integer(p)
     assert p.nbits() >= phi_pow, f"construction only works if the number of bits in prime (here {p=}) is greater or equal to {phi_pow=}"
 
     # initailisation of the degree n and the parameter lambda
+    phi = 2**phi_pow
     n = search_minimal_degree(p, k, phi)
     lamb = INIT_LAMB
 

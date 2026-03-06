@@ -5,8 +5,8 @@
 # ==================================================
 
 from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp
-from pmns_factory.pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
-from pmns_factory.pmns_core.math_utils import square_and_multiply
+from pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
+from pmns_core.math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 
@@ -224,7 +224,7 @@ def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):
     d_inv = pow(d, -1, phi)
 
     # compute -M^(-1) modulo phi
-    N = PR([(-d_inv * c) % phi for c in u.list()])
+    N = PR((-d_inv*u) % phi)
 
     return M, N
 
@@ -235,7 +235,7 @@ def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
     Function that compute a minimal value of n such that we can possibly construct a PMNS
 
     Args:
-        p (int): prime used to construction extension field
+        p (Interger): prime used to construction extension field
         k (int): extension degree
         phi (int): word size bound (ex: 2**63)
         max_add_coef (int): minimal value add to coefficient after internal reduction with initial parameters
@@ -246,7 +246,7 @@ def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
         int: return a degree n minimal for wich we can possibly construct a PMNS
     """
     pbits = p.nbits()
-    n = int(pbits * k / phi.nbits()) + 1
+    n = int(pbits * k / phi.bit_length()) + 1
 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
     # here :

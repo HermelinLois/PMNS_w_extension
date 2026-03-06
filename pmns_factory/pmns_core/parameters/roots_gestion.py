@@ -5,9 +5,7 @@
 # ==================================================
 
 from sage.all import Integer, gcd, matrix, GF, PolynomialRing
-from math_utils import square_and_multiply
-
-PR = PolynomialRing(K,"X")
+from pmns_core.math_utils import square_and_multiply
 
 def is_gamma_feasible(p:int, k:int) -> bool:
     """
@@ -60,9 +58,6 @@ def is_root_free(root, k: int, p: int) -> bool:
     for _ in range(k):
         polynomial = current_element.polynomial()
         deg = polynomial.degree()
-        # if an element is an interger, we know that it's impossible that the family is free
-        if deg == 0:
-            return False
         
         # convert element to list of coefficients, pad with zeros
         coeffs = list(polynomial) + [0]*(k - deg - 1)
@@ -126,9 +121,10 @@ def search_roots(p:int, k:int, pol_e) -> list:
         list (extension field element): roots of pol_e in GF(p^k) suitable for PMNS representation
     """
     
-    # create extension field
+    # create extension field and polynomial space
     K = GF(p**k)
-    
+    PR = PolynomialRing(K,"X")
+
     # create polynomial space
     X = PR("X")
     
