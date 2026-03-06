@@ -1,3 +1,9 @@
+# ==================================================
+# pmns_E_type0.py
+# Functions to construct a PMNS in extension field GF(p^k)
+# with E = X^n - lamb as the external reduction polynomial
+# ==================================================
+
 from sage.all import PolynomialRing, ZZ, ceil, Integer
 from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead
 from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
@@ -34,6 +40,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     """
     n = pol_e.degree()
     lamb = abs(pol_e[0])
+    
     # compute overhead based on: "PMNS for efficient arithmetic and small memory cost" 
     # (J. Robert, P. Véron, F. Dosso, 2022)
     w = search_memory_overhead(pol_e)

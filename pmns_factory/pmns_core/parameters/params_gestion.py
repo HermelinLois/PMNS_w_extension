@@ -194,7 +194,7 @@ def search_polynomial_m(base, k:int, p:int, gamma, pol_e):
     return search_m_with_even_0deg(base, pol_e)
 
 
-def search_m_and_n(k: int, p: int, gamma, base, phi: int, pol_e):
+def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):
     """
     Function that retrieves a polynomial M invertible modulo pol_e and N = -M^(-1) mod phi.
 
@@ -203,7 +203,7 @@ def search_m_and_n(k: int, p: int, gamma, base, phi: int, pol_e):
         p (int): prime used to construct the extension field
         gamma (extension field element): root of E suitable for PMNS construction
         base (matrix): reduced base of null polynomial over gamma
-        phi (int): word size bound
+        phi (int, Optional): word size bound. Equal to 64 by default
         pol_e (Polynomial): polynomial used for external reduction in PMNS
 
     Returns:
@@ -212,6 +212,8 @@ def search_m_and_n(k: int, p: int, gamma, base, phi: int, pol_e):
     """
     # retrieve an invertible polynomial M modulo pol_e
     M = search_polynomial_m(base, k, p, gamma, pol_e)
+    
+    assert M(gamma) == 0, "problem occuring with the base. Polynomial M isn't inverssible"
 
     # with xgcd, we get d, u, v such that M*u + pol_e*v = d
     # modulo pol_e, we have M^(-1) = u * d^(-1)
