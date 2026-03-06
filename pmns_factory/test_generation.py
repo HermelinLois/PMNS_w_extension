@@ -10,9 +10,9 @@ if __name__ == "__main__":
     k = 2
 
 
-    print("=> génération des paramètres débutée <=")
+    print("=> start PMNS parameters generation <=")
     parameters = gen_parameters(p, k)
-    print("=> génération des paramètres achevée <=")
+    print("=> generation achieved <=")
 
     rho, gamma, phi_pow, L, E = parameters['rho'], parameters['gamma'], parameters['phi_pow'], parameters['L'], parameters['E']
     phi = 2**phi_pow
