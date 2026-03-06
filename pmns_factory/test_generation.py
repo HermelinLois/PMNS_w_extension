@@ -1,3 +1,8 @@
+# ==================================================
+# test_generation.py
+# File to test a PMNS construction with specific E type
+# ==================================================
+
 from sage.all import random_prime, randint, GF
 from pmns_E_type0 import gen_parameters
 from pmns_core.parameters.params_gestion import search_m_and_n
@@ -30,7 +35,7 @@ if __name__ == "__main__":
     A = convert_element_to_pmns_montgomery(a, gamma_base, **parameters)
     B = convert_element_to_pmns_montgomery(b, gamma_base, **parameters)
     print(f"{a = } is represented by:\n{A}\n({A(gamma) == a})\n")
-    print(f"{b = } is represented by:\n{B}\n({B(gamma) == b})\n\n")
+    print(f"{b = } is represented by:\n{B}\n({B(gamma) == b})\n")
     
     C = A * B % E
     rC = montgomery_reduction(C, M, N, E, phi)

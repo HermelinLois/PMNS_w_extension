@@ -8,7 +8,7 @@
 # ==================================================
 
 from sage.all import vector, ZZ, floor, matrix, ceil
-from ...parameters.matrix_gestion import gen_overflow_matrix
+from ...parameters.params_gestion import search_memory_overhead
 
 def babai_nearest_plane_reduction(l_base, pol_p):
     """
@@ -113,25 +113,25 @@ def gen_params_for_babai(l_base, phi:int, rho:int, pol_e):
     """
     l_inv = l_base.inverse()
 
-    # h1 must verify that round(2**h1 * B^-1) <= phi/2
-    # so 2**h1 * B^-1 <= phi/2 - 0.5
-    # so h1 <= log2((phi/2 - 0.5) / B^-1)
+    # h1 must verify that round(2**h1 * B^-1) <= phi/4
+    # so 2**h1 * B^-1 <= phi/4 - 0.5
+    # so h1 <= log2((phi/4 - 0.5) / B^-1)
     # as this condition is true for all element and knowing that the limit is at its lower when B^-1 = max(|B^-1|)
 
     maximum_value = max(abs(c) for c in l_inv)
-    h1 = ceil((phi/2 - 0.5) / (maximum_value)).nbits()
+    h1 = ceil((phi/4 - 0.5) / (maximum_value)).nbits()
     
     l_inv_babai = matrix([[round(2**h1 * x) for x in vect] for vect in l_inv])
 
-    # h2 must verify that low(v / 2**h2) <= phi/2
-    # so v / 2**h2 <= phi/2 <==> h2 > log2(2*v/phi)
+    # h2 must verify that low(v / 2**h2) <= phi/4
+    # so v / 2**h2 <= phi/4 <==> h2 > log2(4*v/phi)
     # this contion must be true for all element and thus for max(v) giving us our lower limit of h2
     # but element are under rho so the product (without reduction) have coefficients under rho**2
     # with reduction, overhead * rho**2 is added at maximum to element
-    # so maximum element are less than rho**2(overhead + 1)
+    # so maximum element are less than rho**2 overhead
         
-    epsilon = gen_overflow_matrix(pol_e)
-    maximum_value = rho**2 * (1 + epsilon.norm(1))
-    h2 = int(2*maximum_value / phi).bit_length()
+    w = search_memory_overhead(pol_e)
+    maximum_value = rho**2 * w
+    h2 = int(4*maximum_value / phi).bit_length()
     
     return h1, h2, l_inv_babai

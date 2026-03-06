@@ -1,0 +1,38 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "param.h"
+#include "test_values.h"
+
+{% include reduction_file}
+
+void print_pol(int64_t *P){
+    for (int idx=0; idx<DEGREE; idx++){
+        printf("%ld  ", P[idx]);
+    }
+    printf("\n");
+}
+
+
+void check_validity(int64_t *P, int64_t *C){
+    for (int i=0; i<DEGREE; i++){
+        if(C[i] != P[i]){
+            printf("polynomial found by python : ");
+            print_pol(C);
+            print_pol(param);
+            exit(1);
+        }
+    }
+}
+
+
+int main(){
+    int64_t res[DEGREE];
+
+    for (int idx=0; idx<N_TEST; idx++){
+        {{method_name}}(res, R[idx]);
+        check_validity(res, C_values[idx]);
+    }
+    printf("ok\n");
+    return 0;
+}

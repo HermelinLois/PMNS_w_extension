@@ -1,5 +1,5 @@
 # ==================================================
-# matrix_generation.py
+# matrix_gestion.py
 # Generic functions around matrix used for PMNS construction
 # and C implementation
 # ==================================================
