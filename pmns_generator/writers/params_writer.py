@@ -54,7 +54,8 @@ def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
     template = env.get_template("params_c_template.j2")
 
     is_method_montgomery = (method == METHOD_MONTGOMERY)
-    params = {"is_method_montgomery" : is_method_montgomery, **compute_additional_params(method, pmns_params)}
+    params = compute_additional_params(method, pmns_params)
+    params.update({"is_method_montgomery" : is_method_montgomery})
     
     rendered_params = template.render(params)
     
