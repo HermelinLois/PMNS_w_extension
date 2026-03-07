@@ -1,0 +1,38 @@
+# Miniconda/Anaconda
+miniconda3/
+Miniconda3/
+anaconda3/
+Anaconda3/
+Miniconda3-latest-Linux-x86_64.sh
+
+# Conda environments
+env/
+venv/
+.conda/
+
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Generated code
+generated_code/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Pytest
+.pytest_cache/
