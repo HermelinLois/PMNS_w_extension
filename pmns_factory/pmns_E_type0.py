@@ -116,4 +116,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
             lamb, n = increase_parameters(pol_e, p, k, phi)
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': gamma.parent().modulus()}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}

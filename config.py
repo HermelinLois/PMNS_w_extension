@@ -1,6 +1,7 @@
 # ==================================================
 # config.py
 # File to resume reduction method and E type usable
+# to construct a PMNS
 # ==================================================
 
 import sys
@@ -23,12 +24,14 @@ REDUCTION_CONFIG = {
     METHOD_MONTGOMERY: {
         "py_func": montgomery_reduction,
         "c_method_name": "montgomery_reduction",
-        "template_file": "montgomery_template.j2"
+        "template_file": "montgomery_template.j2",
+        "name": METHOD_MONTGOMERY,
     },
     METHOD_BABAI: {
         "py_func": babai_rounding_limited_reduction,
         "c_method_name": "babai_reduction",
-        "template_file": "babai_template.j2"
+        "template_file": "babai_template.j2",
+        "name": METHOD_BABAI,
     }
 }
 

@@ -1,3 +1,8 @@
+# ==================================
+# code_writer.py
+# Function to write C reduction code 
+# ==================================
+
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 

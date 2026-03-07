@@ -1,0 +1,13 @@
+#define DEGREE {{n}}
+{% if is_method_montgomery %}
+#define MAT_M {{mat_m}}
+
+#define MAT_N {{mat_n}}
+{% else %}
+#define H1 {{h1}}
+#define H2 {{h2}}
+
+#define L[DEGREE][DEGREE] {{L}}
+
+#define L_INV_BABAI[DEGREE][DEGREE] {{L_inv_babai}}
+{% endif %}
