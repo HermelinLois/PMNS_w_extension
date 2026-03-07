@@ -19,7 +19,6 @@ def gen_parameters_for_method(method:int, **kwargs) -> None:
 
 
 def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
-    assert k > 1, "extension degree must be at least 2"
     assert Etype in PMNS_CONFIG.keys()
     assert method in REDUCTION_CONFIG.keys()
 

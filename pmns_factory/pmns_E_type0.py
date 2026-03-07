@@ -39,7 +39,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
         n (int): either n or n+k
     """
     n = pol_e.degree()
-    lamb = abs(pol_e[0])
+    lamb = - pol_e[0]
     
     # compute overhead based on: "PMNS for efficient arithmetic and small memory cost" 
     # (J. Robert, P. Véron, F. Dosso, 2022)
@@ -49,14 +49,14 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     return lamb + 1, n
 
 
-def search_minimal_degree(p: int, k: int, phi: int) -> int:
+def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     """
     Function that search minimal degree from wich we can possibly construct a PMNS from our initial coefficients
 
     Args:
         p (int): prime use to construct extension field
         k (int): extension degree
-        phi (int): word size interger of the architecture (ie 2**(word size))
+        phi_pow (int): word size of the architecture
 
     Returns:
         int: degree from wich we can possibly construct a PMNS
@@ -64,7 +64,7 @@ def search_minimal_degree(p: int, k: int, phi: int) -> int:
     #initialy, max add coef is lamb for external reduction
     # so we serach a minimal n with this lamb
     max_add_coef = INIT_LAMB
-    n = SMD(p, k, phi, max_add_coef)
+    n = SMD(p, k, phi_pow, max_add_coef)
     
     # as we search root of polynomial pol_e in extension field, wich ar e intergers of power k, 
     # we have to let the degree n be a multiple of k
@@ -96,9 +96,9 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
     assert p.nbits() >= phi_pow, f"construction only works if the number of bits in prime (here {p=}) is greater or equal to {phi_pow=}"
 
     # initailisation of the degree n and the parameter lambda
-    phi = 2**phi_pow
-    n = search_minimal_degree(p, k, phi)
+    n = search_minimal_degree(p, k, phi_pow)
     lamb = INIT_LAMB
+    phi = 2**phi_pow
 
     parameters_not_found = True
     result = None

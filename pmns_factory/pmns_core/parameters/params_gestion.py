@@ -230,14 +230,14 @@ def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):
 
 
 
-def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
+def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: int) -> int:
     """
     Function that compute a minimal value of n such that we can possibly construct a PMNS
 
     Args:
         p (Interger): prime used to construction extension field
         k (int): extension degree
-        phi (int): word size bound (ex: 2**63)
+        phi_pow (int): word size
         max_add_coef (int): minimal value add to coefficient after internal reduction with initial parameters
         
         exemple : E = X^n - alpha X^k - beta => max_add_coef can be approximate by  beta + alpha(alpha + beta)
@@ -246,7 +246,8 @@ def search_minimal_degree(p: int, k: int, phi: int, max_add_coef: int) -> int:
         int: return a degree n minimal for wich we can possibly construct a PMNS
     """
     pbits = p.nbits()
-    n = int(pbits * k / phi.bit_length()) + 1
+    n = int(pbits * k / phi_pow) + 1
+    phi = 2**phi_pow
 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
     # here :
