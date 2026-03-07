@@ -87,7 +87,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
         phi_pow (int): word size architectur from wich we construct the PMNS
         L (matrix): reduce lattice matrix of null polynomial over gamma
         E (Polynomial): external reduction polynomial use by the PMNS
-        
+        mod (Polynomial): Polynomial used to construct the extension field
     """
     assert is_gamma_feasible(p, k), "no gamma possibly satisfy the construction"
     assert k > 1, f"extension degree must be at least 2, here {k=}"
@@ -116,4 +116,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
             lamb, n = increase_parameters(pol_e, p, k, phi)
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': gamma.parent().modulus()}
