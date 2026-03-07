@@ -7,8 +7,10 @@
 #   > rounding reduction with limited precision
 # ==================================================
 
-from sage.all import vector, ZZ, floor, matrix, ceil
+from sage.all import vector, ZZ, floor, matrix, ceil, PolynomialRing
 from ...parameters.params_gestion import search_memory_overhead
+
+PR = PolynomialRing(ZZ, "X")
 
 def babai_nearest_plane_reduction(l_base, pol_p):
     """
@@ -38,7 +40,7 @@ def babai_nearest_plane_reduction(l_base, pol_p):
         coef = round(s.dot_product(G[idx]))
         s -= coef * l_base[idx]
 
-    return ZZ["X"](list(s))
+    return PR(list(s))
 
 
 def babai_rounding_unlimited_reduction(l_base, pol_p):
@@ -62,7 +64,7 @@ def babai_rounding_unlimited_reduction(l_base, pol_p):
 
     coefs = vector(map(round, s * l_inv))
 
-    return ZZ["X"](list(s - coefs * l_base))
+    return PR(list(s - coefs * l_base))
 
 
 def babai_rounding_limited_reduction(pol_p, h1, h2, l_base, l_inv_babai):
@@ -93,16 +95,16 @@ def babai_rounding_limited_reduction(pol_p, h1, h2, l_base, l_inv_babai):
     s = v * l_inv_babai
     s = vector([floor(x / 2**(h1 - h2)) for x in s])
 
-    return ZZ["X"](list(vector(resize_vect) - s * l_base))
+    return PR(list(vector(resize_vect) - s * l_base))
 
 
-def gen_params_for_babai(l_base, phi:int, rho:int, pol_e):
+def gen_params_for_babai(l_base, phi_pow:int, rho:int, pol_e):
     """
     Generate parameters for babi limited implementation.
 
     Args:
         l_base (matrix): lattice base of null polynomial in gamma
-        phi (int): represent bit word size use by the architecture
+        phi_pow (int): represent bit word size use by the architecture
         rho (int): limit for absolute coefficients values
         pol_e (Polynomial): polynomial use in external reduction
 
@@ -112,19 +114,23 @@ def gen_params_for_babai(l_base, phi:int, rho:int, pol_e):
         l_inv_babai (matrix): inver in ratianal field of the lattice base l_base
     """
     l_inv = l_base.inverse()
-
-    # h1 must verify that round(2**h1 * B^-1) <= phi/4
-    # so 2**h1 * B^-1 <= phi/4 - 0.5
-    # so h1 <= log2((phi/4 - 0.5) / B^-1)
+    
+    
+    #  as we need a sign bit for element we search h1 and h2 such that
+    # numerical part are contained in phi_pow -1 bits
+    
+    # h1 must verify that round(2**h1 * B^-1) <= 2**(phi_pow-1)
+    # so 2**h1 * B^-1 <= 2**(phi_pow -1) - 0.5
+    # so h1 <= log2(( 2**(phi_pow -1) - 0.5) / B^-1)
     # as this condition is true for all element and knowing that the limit is at its lower when B^-1 = max(|B^-1|)
 
     maximum_value = max(abs(c) for c in l_inv)
-    h1 = ceil((phi/4 - 0.5) / (maximum_value)).nbits()
+    h1 = ceil(log((2**(phi_pow - 1) -0.5) / (maximum_value), 2))
     
     l_inv_babai = matrix([[round(2**h1 * x) for x in vect] for vect in l_inv])
 
-    # h2 must verify that low(v / 2**h2) <= phi/4
-    # so v / 2**h2 <= phi/4 <==> h2 > log2(4*v/phi)
+    # h2 must verify that low(v / 2**h2) <= 2**(phi_pow -1)
+    # so v / 2**h2 < 2**(phi_pow -1) + 1 <==> h2 > log2(v/ 2**(phi_pow -1) + 1)
     # this contion must be true for all element and thus for max(v) giving us our lower limit of h2
     # but element are under rho so the product (without reduction) have coefficients under rho**2
     # with reduction, overhead * rho**2 is added at maximum to element
@@ -132,6 +138,6 @@ def gen_params_for_babai(l_base, phi:int, rho:int, pol_e):
         
     w = search_memory_overhead(pol_e)
     maximum_value = rho**2 * w
-    h2 = int(4*maximum_value / phi).bit_length()
+    h2 = ceil(log(maximum_value / (2**(phi_pow -1) + 1), 2)) + 1
     
     return h1, h2, l_inv_babai
