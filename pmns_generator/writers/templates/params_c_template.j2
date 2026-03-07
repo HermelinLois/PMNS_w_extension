@@ -1,0 +1,15 @@
+#include <stdint.h>
+
+#define DEGREE {{n}}
+{% if is_method_montgomery %}
+#define MAT_M {{mat_m}}
+
+#define MAT_N {{mat_n}}
+
+{% else %}#define H1 {{h1}}
+#define H2 {{h2}}
+
+static const int64_t L [DEGREE][DEGREE] = {{L}}
+
+static const int64_t L_INV_BABAI [DEGREE][DEGREE] = {{L_inv_babai}}
+{% endif %}

@@ -125,7 +125,7 @@ def gen_params_for_babai(l_base, phi_pow:int, rho:int, pol_e):
     # as this condition is true for all element and knowing that the limit is at its lower when B^-1 = max(|B^-1|)
 
     maximum_value = max(abs(c) for c in l_inv)
-    h1 = ceil(log((2**(phi_pow - 1) -0.5) / (maximum_value), 2))
+    h1 = floor(log((2**(phi_pow - 1) -0.5) / (maximum_value), 2))
     
     l_inv_babai = matrix([[round(2**h1 * x) for x in vect] for vect in l_inv])
 

@@ -12,7 +12,7 @@ ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
 
-from config import PMNS_CONFIG, REDUCTION_CONFIG, E_TYPE0, METHOD_MONTGOMERY
+from config import PMNS_CONFIG, REDUCTION_CONFIG, E_TYPE0, METHOD_MONTGOMERY, METHOD_BABAI
 
 
 def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:

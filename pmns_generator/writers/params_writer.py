@@ -6,6 +6,7 @@
 
 from sage.all import PolynomialRing,ZZ
 from jinja2 import Environment, FileSystemLoader
+from .format_to_c.int64_to_c import format_matrix
 from pathlib import Path
 import sys
 
@@ -40,14 +41,14 @@ def compute_additional_params(method, params):
         
         M = search_polynomial_m(L, k, p, gamma, E)
         mat_m, mat_n = gen_external_reduction_matrix(M, E, phi)
-        return {'n': n, 'mat_m': mat_m, 'mat_n': mat_n}
+        return {'n': n, 'mat_m': format_matrix(mat_m), 'mat_n': format_matrix(mat_n)}
         
     if method == METHOD_BABAI:
         from pmns_factory.pmns_core.operations.reductions.babai_reduction import gen_params_for_babai
         
         rho = params['rho']
         h1, h2, l_inv_babai = gen_params_for_babai(L, phi_pow, rho, E)
-        return {'n': n, 'h1': h1, 'h2': h2, 'L_inv_babai': l_inv_babai}
+        return {'n': n, 'h1': h1, 'h2': h2, 'L_inv_babai': format_matrix(l_inv_babai), 'L': format_matrix(L)}
 
 
 def write_c_params(output_dir, method, pmns_params):
@@ -56,7 +57,6 @@ def write_c_params(output_dir, method, pmns_params):
 
     is_method_montgomery = (method == METHOD_MONTGOMERY)
     params = {"is_method_montgomery" : is_method_montgomery, **compute_additional_params(method, pmns_params)}
-    
     
     rendered_params = template.render(params)
     

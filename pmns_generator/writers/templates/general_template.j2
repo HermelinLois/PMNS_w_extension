@@ -19,7 +19,7 @@ void check_validity(int64_t *P, int64_t *C){
         if(C[i] != P[i]){
             printf("polynomial found by python : ");
             print_pol(C);
-            print_pol(param);
+            print_pol(P);
             exit(1);
         }
     }
