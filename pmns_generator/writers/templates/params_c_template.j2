@@ -2,9 +2,9 @@
 
 #define DEGREE {{n}}
 {% if is_method_montgomery %}
-#define MAT_M {{mat_m}}
+static const int64_t MAT_M [DEGREE][DEGREE] = {{mat_m}}
 
-#define MAT_N {{mat_n}}
+static const int64_t MAT_N [DEGREE][DEGREE] = {{mat_n}}
 
 {% else %}#define H1 {{h1}}
 #define H2 {{h2}}

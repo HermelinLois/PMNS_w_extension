@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "param.h"
-#include "test_values.h"
+#include "test.h"
 
 {% include reduction_file %}
 
@@ -30,8 +30,8 @@ int main(){
     int64_t res[DEGREE];
 
     for (int idx=0; idx<N_TEST; idx++){
-        {{method_name}}(res, R[idx]);
-        check_validity(res, C_values[idx]);
+        {{method_name}}(res, P[idx]);
+        check_validity(res, R[idx]);
     }
     printf("ok\n");
     return 0;

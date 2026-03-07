@@ -6,11 +6,12 @@
 
 from sage.all import PolynomialRing,ZZ
 from jinja2 import Environment, FileSystemLoader
-from .format_to_c.int64_to_c import format_matrix
+from .format_to_c.int_to_c import format_matrix
 from pathlib import Path
 import sys
 
 CURRENT_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = CURRENT_DIR / "templates"
 ROOT_DIR = CURRENT_DIR.parent.parent
 
 ROOT_PATH = str(ROOT_DIR)
@@ -19,12 +20,9 @@ if ROOT_PATH not in sys.path:
     
 from config import METHOD_MONTGOMERY, METHOD_BABAI
 
-CURRENT_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = CURRENT_DIR / "templates"
-
 PR = PolynomialRing(ZZ,"X")
 
-def compute_additional_params(method, params):
+def compute_additional_params(method, params:dict) -> None:
     E = params['E']
     L = params['L']
     n = E.degree()
@@ -51,7 +49,7 @@ def compute_additional_params(method, params):
         return {'n': n, 'h1': h1, 'h2': h2, 'L_inv_babai': format_matrix(l_inv_babai), 'L': format_matrix(L)}
 
 
-def write_c_params(output_dir, method, pmns_params):
+def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("params_c_template.j2")
 
@@ -64,7 +62,7 @@ def write_c_params(output_dir, method, pmns_params):
     output_path.write_text(rendered_params)
 
 
-def write_txt_params(output_dir, params):
+def write_txt_params(output_dir:str, params:dict) -> None:
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("params_txt_template.j2")
     

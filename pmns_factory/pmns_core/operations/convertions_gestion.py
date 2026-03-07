@@ -57,7 +57,7 @@ def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
     Args:
         element (extension field element): element to convert
         gamma_base (matrix): powers of chosen gamma
-        kwargs: must include phi, rho, gamma, M, N, E
+        kwargs: must include phi_pow, rho, gamma, M, N, E
 
     Returns:
         Polynomial: PMNS representation

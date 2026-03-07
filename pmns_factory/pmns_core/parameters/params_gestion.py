@@ -194,7 +194,7 @@ def search_polynomial_m(base, k:int, p:int, gamma, pol_e):
     return search_m_with_even_0deg(base, pol_e)
 
 
-def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):
+def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi_pow: int=64):
     """
     Function that retrieves a polynomial M invertible modulo pol_e and N = -M^(-1) mod phi.
 
@@ -203,13 +203,14 @@ def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):
         p (int): prime used to construct the extension field
         gamma (extension field element): root of E suitable for PMNS construction
         base (matrix): reduced base of null polynomial over gamma
-        phi (int, Optional): word size bound. Equal to 64 by default
+        phi_pow (int, Optional): word size bound. Equal to 64 by default
         pol_e (Polynomial): polynomial used for external reduction in PMNS
 
     Returns:
         Polynomial: M, a polynomial null over gamma and invertible modulo pol_e
         Polynomial: N, a polynomial such that N = -M^(-1) mod phi
     """
+    phi = 2**phi_pow
     # retrieve an invertible polynomial M modulo pol_e
     M = search_polynomial_m(base, k, p, gamma, pol_e)
     
