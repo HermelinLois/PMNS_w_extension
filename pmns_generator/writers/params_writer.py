@@ -27,26 +27,32 @@ def compute_additional_params(method, params:dict) -> None:
     L = params['L']
     n = E.degree()
     phi_pow = params['phi_pow']
-    
+
     if method == METHOD_MONTGOMERY:
         from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import gen_external_reduction_matrix
-        from pmns_factory.pmns_core.parameters.params_gestion import search_polynomial_m
+        from pmns_factory.pmns_core.parameters.params_gestion import search_m_and_n
         
         phi = 2**phi_pow
         k = params['k']
         p = params['p']
         gamma = params['gamma']
         
-        M = search_polynomial_m(L, k, p, gamma, E)
+        M, N = search_m_and_n(k, p, gamma, L, E, phi)
         mat_m, mat_n = gen_external_reduction_matrix(M, E, phi)
-        return {'n': n, 'mat_m': format_matrix(mat_m), 'mat_n': format_matrix(mat_n)}
+
+        params['phi'] = phi
+        params.update({'n': n, 'mat_m_str': format_matrix(mat_m), 'mat_n_str': format_matrix(mat_n), 'M': M, 'N': N})
+        return
         
     if method == METHOD_BABAI:
         from pmns_factory.pmns_core.operations.reductions.babai_reduction import gen_params_for_babai
         
         rho = params['rho']
+
         h1, h2, l_inv_babai = gen_params_for_babai(L, phi_pow, rho, E)
-        return {'n': n, 'h1': h1, 'h2': h2, 'L_inv_babai': format_matrix(l_inv_babai), 'L': format_matrix(L)}
+
+        params.update({'n': n, 'h1': h1, 'h2': h2, 'L_inv_babai': l_inv_babai, 'L_inv_babai_str': format_matrix(l_inv_babai), 'L_str': format_matrix(L)})
+        return
 
 
 def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
@@ -54,10 +60,11 @@ def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
     template = env.get_template("params_c_template.j2")
 
     is_method_montgomery = (method == METHOD_MONTGOMERY)
-    params = compute_additional_params(method, pmns_params)
-    params.update({"is_method_montgomery" : is_method_montgomery})
+
+    compute_additional_params(method, pmns_params)
+    used_params = {"is_method_montgomery" : is_method_montgomery, **pmns_params}
     
-    rendered_params = template.render(params)
+    rendered_params = template.render(used_params)
     
     output_path = Path(output_dir) / "param.h"
     output_path.write_text(rendered_params)

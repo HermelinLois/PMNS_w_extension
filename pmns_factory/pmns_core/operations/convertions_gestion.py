@@ -77,7 +77,7 @@ def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
     V = convert_element_to_polynomial(alpha, gamma_base)   
 
     for i in range(n):
-        V = montgomery_reduction(V, M, N, E, phi)
+        V = montgomery_reduction(V, M, N, E, gamma, phi)
 
     assert V(gamma) == element, f"polynomial doesn't represent {element=}"
     assert all(abs(c) < rho for c in V), f"{rho=} too low for {element=}"

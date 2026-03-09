@@ -9,26 +9,26 @@ from ...math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 
-def gen_external_reduction_matrix(pol_m, pol_e, phi: int):
+def gen_external_reduction_matrix(M, E, phi: int):
     """
-    Generate matrices pol_m and N for external reduction in PMNS.
+    Generate matrices M and N for external reduction in PMNS.
 
     Args:
-        pol_m (Polynomial): polynomial null in the chosen root of pol_e
-        pol_e (Polynomial): polynomial used for external reduction
+        M (Polynomial): polynomial null in the chosen root of E
+        E (Polynomial): polynomial used for external reduction
         phi (int): word size in bits (used for modulo)
 
     Returns:
-        mat_m (matrix): matrix representing pol_m for Montgomery reduction
-        mat_n (matrix): matrix representing N = -pol_m^(-1) modulo phi
+        mat_m (matrix): matrix representing M for Montgomery reduction
+        mat_n (matrix): matrix representing N = -M^(-1) modulo phi
     """
-    n = pol_e.degree()
+    n = E.degree()
     X = PR("X")
 
     matrix_coefficients = []
     for i in range(n):
-        # Compute (pol_m * X^i) % pol_e
-        poly_mod = (pol_m * square_and_multiply(X,i)) % pol_e
+        # Compute (M * X^i) % E
+        poly_mod = (M * square_and_multiply(X,i)) % E
         coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
         matrix_coefficients.append(coeffs)
 
@@ -38,20 +38,25 @@ def gen_external_reduction_matrix(pol_m, pol_e, phi: int):
     return mat_m, mat_n
 
 
-def montgomery_reduction(pol_p, pol_m, pol_n, pol_e, phi:int):
+def montgomery_reduction(pol_p, M, N, E, gamma, phi:int):
     """
     Reduction of a polynomial with Montgomery reduction
 
     Args:
         pol_p (Polynomial | matrix): elment wich need to be reduced 
-        pol_m (Polynomial | matrix): element wich represent M such that M(gamma)=0
-        pol_n (Polynomial | matrix): element wich represent N = -M^-1
-        pol_e (Polynomial): polynomial for external reduction
+        M (Polynomial | matrix): element wich represent M such that M(gamma)=0
+        N (Polynomial | matrix): element wich represent N = -M^-1
+        E (Polynomial): polynomial for external reduction
         phi (int): represent bit word size use by the architecture
+        gamma (extension field element): root of E
 
     Returns:
         Polynomial : reduction of pol_p which still represent the same element
     """
-    Q = ((pol_p * pol_n) % pol_e) % phi
-    T = (Q * pol_m) % pol_e 
-    return (pol_p + T) // phi
+    Q = ((pol_p * N) % E) % phi
+    T = (Q * M) % E 
+    reduction = (pol_p + T) // phi
+
+    assert reduction(gamma) * phi == pol_p(gamma), "Error occurring during reduction. Please check parameters"
+    
+    return reduction

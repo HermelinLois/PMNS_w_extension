@@ -2,14 +2,14 @@
 
 #define DEGREE {{n}}
 {% if is_method_montgomery %}
-static const int64_t MAT_M [DEGREE][DEGREE] = {{mat_m}}
+static const int64_t MAT_M [DEGREE][DEGREE] = {{mat_m_str}}
 
-static const int64_t MAT_N [DEGREE][DEGREE] = {{mat_n}}
+static const int64_t MAT_N [DEGREE][DEGREE] = {{mat_n_str}}
 
 {% else %}#define H1 {{h1}}
 #define H2 {{h2}}
 
-static const int64_t L [DEGREE][DEGREE] = {{L}}
+static const int64_t L [DEGREE][DEGREE] = {{L_str}}
 
-static const int64_t L_INV_BABAI [DEGREE][DEGREE] = {{L_inv_babai}}
+static const int64_t L_INV_BABAI [DEGREE][DEGREE] = {{L_inv_babai_str}}
 {% endif %}

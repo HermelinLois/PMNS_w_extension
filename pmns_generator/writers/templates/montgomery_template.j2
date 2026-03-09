@@ -10,6 +10,7 @@
     }\
 }
 
+
 #define {{method_name}}(res, R){\
     uint64_t Q[DEGREE];\
     __int128 T[DEGREE];\
@@ -21,3 +22,4 @@
         res[deg] = (T[deg] + R[deg]) >> 64;\
     }\
 }
+
