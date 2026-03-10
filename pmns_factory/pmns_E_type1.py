@@ -1,13 +1,14 @@
-from sage.all import PolynomialRing, ZZ, ceil, Integer
+from sage.all import PolynomialRing, ZZ, ceil, Integer, GF
 from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead
 from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
 PR = PolynomialRing(ZZ, "X")
+X = PR("X")
 INIT_ALPHA = 1
 INIT_BETA = 2
 
 def gen_pol_e(n, k, alpha, beta):
-    return PR(f"X**{n} - {alpha}*X**{k} - {beta}") 
+    return X**n - alpha * X**k - beta
 
 def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     n = pol_e.degree()
@@ -43,7 +44,7 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     return int(k * ceil(n/k))
 
 
-def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
+def gen_parameters(p:int, k:int, phi_pow:int=64, name:str ="z") -> dict:
     assert is_gamma_feasible(p, k), "no gamma satisfy the construction"
     assert k > 1, f"extension degree must be at least 2, here {k=}"
 
@@ -55,13 +56,15 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
     beta = INIT_BETA
     phi = 2**phi_pow
 
+    K = GF(p**k, name)
+
     round_count = 0
     parameters_not_found = True
     result = None
     while parameters_not_found:
         round_count += 1
         pol_e = gen_pol_e(n, k, alpha, beta)
-        roots = search_roots(p, k, pol_e)
+        roots = search_roots(p, k, pol_e, K)
 
         if roots:
             result = search_base_rho_and_gamma(roots, k, p, phi, pol_e)

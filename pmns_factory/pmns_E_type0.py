@@ -4,11 +4,13 @@
 # with E = X^n - lamb as the external reduction polynomial
 # ==================================================
 
-from sage.all import PolynomialRing, ZZ, ceil, Integer
+from sage.all import PolynomialRing, ZZ, ceil, Integer, GF
 from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead
 from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
 PR = PolynomialRing(ZZ, "X")
+X = PR("X")
+
 INIT_LAMB = 2
 
 def gen_pol_e(n:int, lamb:int):
@@ -22,7 +24,7 @@ def gen_pol_e(n:int, lamb:int):
     Returns:
         Polynomial: return the external reduction polynomial
     """
-    return PR(f"X**{n} - {lamb}") 
+    return X**n - lamb
 
 def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     """
@@ -74,13 +76,14 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     return int(k * ceil(n/k))
 
 
-def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
+def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
     """
     Function use to generate PMNS parameters given the prime p, the extension degree and the word size parameter of the architecture
 
     Args:
         p (int): prime use to construct extension field
         k (int): extension degree
+        name (str): name given to element to extension field element
         phi_pow (int, optional): word size use by the arcitecture (usully 2**word size). Defaults to 64.
 
     Returns:
@@ -103,6 +106,9 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
     lamb = INIT_LAMB
     phi = 2**phi_pow
 
+    # extension field creation
+    K = GF(p**k, name)
+
     parameters_not_found = True
     result = None
     round_count = 0
@@ -110,7 +116,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
         round_count += 1
         # construction of the polynomial pol_e
         pol_e = gen_pol_e(n, lamb)
-        roots = search_roots(p, k, pol_e)
+        roots = search_roots(p, k, pol_e, K)
 
         if roots:
             # search suitable element to construct a PMNS using found roots

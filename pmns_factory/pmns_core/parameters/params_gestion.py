@@ -9,6 +9,7 @@ from pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_
 from pmns_core.math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
+PR2 = PolynomialRing(GF(2), "X")
 
 def search_memory_overhead(pol_e) -> int:
     """
@@ -129,7 +130,7 @@ def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
     base = matrix(ZZ, n, n, 0)
     
     # precompute element to fill the matrix
-    gamma_pk = -int(square_and_multiply(gamma, k))
+    gamma_pk = -int((gamma**k))
     gamma_pk_mod2 = gamma_pk & 1
     
     # use the same process as for classical PLNS representation
@@ -152,7 +153,7 @@ def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
     # Note: This function is a general search for the inverse but can be improved if all coefficients 
     # are even, by applying the search of the function 'search_m_with_even_deg'
     
-    reference_polynomial = pol_e.change_ring(GF(2))
+    reference_polynomial = PR2(pol_e)
 
     # search for a linear combination that is invertible mod pol_e
     for linear_combination in range(1, 2**n):
@@ -161,7 +162,7 @@ def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
         
         # create the polynomial and cast it to GF(2)
         polynomial = PR(list(result)) % pol_e
-        bin_polynomial = polynomial.change_ring(GF(2))
+        bin_polynomial = PR2(polynomial)
 
         # check that the polynomial is invertible and not a constant polynomial
         if bin_polynomial != 1 and gcd(bin_polynomial, reference_polynomial) == 1:

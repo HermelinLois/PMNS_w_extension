@@ -80,7 +80,7 @@ def is_root_pow_in_base_field(root, k:int, p:int) -> bool:
         bool: return True if root^k is an integer else False
     """
     value = square_and_multiply(root, k)
-    return value in GF(p)
+    return value.polynomial().degree() <= 0
     
 
 def select_roots(roots:list, p:int, k:int):
@@ -108,7 +108,7 @@ def select_roots(roots:list, p:int, k:int):
     return selected_roots
 
 
-def search_roots(p:int, k:int, pol_e) -> list:
+def search_roots(p:int, k:int, pol_e, K) -> list:
     """
     Retrieve roots of polynomial pol_e in GF(p^k) suitable for PMNS construction.
 
@@ -120,9 +120,6 @@ def search_roots(p:int, k:int, pol_e) -> list:
     Returns:
         list (extension field element): roots of pol_e in GF(p^k) suitable for PMNS representation
     """
-    
-    # create extension field and polynomial space
-    K = GF(p**k)
     PR = PolynomialRing(K,"X")
 
     # create polynomial space
