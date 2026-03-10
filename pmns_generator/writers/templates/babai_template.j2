@@ -19,10 +19,10 @@
 #define {{method_name}}(RESULT, POLYNOMIAL){\
     __int128 S [DEGREE];\
     __int128 SL [DEGREE];\
-    int64_t P [DEGREE];\
+    int64_t PH2 [DEGREE];\
 \
-    coefs_shift(P, POLYNOMIAL, H2);\
-    prod_vect_mat(__int128, S, P, L_INV_BABAI);\
+    coefs_shift(PH2, POLYNOMIAL, H2);\
+    prod_vect_mat(__int128, S, PH2, L_INV_BABAI);\
     coefs_shift(S, S, (H1 - H2));\
     prod_vect_mat(__int128, SL, S, L);\
 \

@@ -40,13 +40,16 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     """
     n = pol_e.degree()
     lamb = - pol_e[0]
-    
+    n_lamb = lamb + 1
+
+    E = gen_pol_e(n, n_lamb)
+
     # compute overhead based on: "PMNS for efficient arithmetic and small memory cost" 
     # (J. Robert, P. Véron, F. Dosso, 2022)
-    w = search_memory_overhead(pol_e)
+    w = search_memory_overhead(E)
     if 2 * w * p**(k/n) >= phi:
         return INIT_LAMB, n + k
-    return lamb + 1, n
+    return n_lamb, n
 
 
 def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
@@ -89,7 +92,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
         E (Polynomial): external reduction polynomial use by the PMNS
         mod (Polynomial): Polynomial used to construct the extension field
     """
-    assert is_gamma_feasible(p, k), "no gamma possibly satisfy the construction"
+    assert is_gamma_feasible(p, k), "no gamma satisfy the construction"
     assert k > 1, f"extension degree must be at least 2, here {k=}"
 
     p = Integer(p)
@@ -102,7 +105,9 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
 
     parameters_not_found = True
     result = None
+    round_count = 0
     while parameters_not_found:
+        round_count += 1
         # construction of the polynomial pol_e
         pol_e = gen_pol_e(n, lamb)
         roots = search_roots(p, k, pol_e)
@@ -114,6 +119,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64) -> dict:
 
         if parameters_not_found:
             lamb, n = increase_parameters(pol_e, p, k, phi)
+
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}, round_count

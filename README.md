@@ -12,6 +12,7 @@ To achieve this, we implement reduction techniques based on:
 
 Additionally, we extend the polynomial form of \(E\), which is used as the reduction polynomial in PMNS:
 - $E = X^n -\lambda$
+- $E = X^n -\alpha X^k -\beta$
 
 ## Dependencies
 - SageMath (for the Python implementation)

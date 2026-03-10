@@ -20,8 +20,8 @@ def is_gamma_feasible(p:int, k:int) -> bool:
             gamma isn't an interger and gamma^k is an interger
     """
     
-    # Ensure p and k are Sage Integer to handle large primes
-    p, k = Integer(p), Integer(k)
+    # Ensure p is Sage Integer to handle large primes
+    p = Integer(p)
     
     # We know that gcd(k, (p^k - 1)/p-1) > 1 to possibly ensure that 
     # there exist gamma wich are suitable for PMNS construction

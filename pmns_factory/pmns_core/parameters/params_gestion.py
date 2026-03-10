@@ -92,7 +92,7 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
 
 
 
-def search_m_with_even_0deg(base, pol_e):
+def search_m_with_even_degs(base, pol_e):
     """
     Optimized search for an invertible polynomial modulo pol_e
     by looking for elements whose degree-0 coefficient is odd.
@@ -112,7 +112,7 @@ def search_m_with_even_0deg(base, pol_e):
     return None
 
 
-def search_m_with_odd_0deg(k: int, p: int, gamma, pol_e):
+def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
     """
     General search for an invertible polynomial modulo pol_e.
 
@@ -145,16 +145,12 @@ def search_m_with_odd_0deg(k: int, p: int, gamma, pol_e):
 
     reduced_base = base.LLL()
     
-    # note that with this structure, there always exists an element invertible in this base
-    # using "PMNS for efficient arithmetic and small memory cost" corollary 3 property about 
-    # the determinant.
+    # Note : with this structure, there always exists an element invertible in this base if E is irrecdutible.
     # we evaluate polynomial in an extension field of characteristic p. Our construction therefore
     # doesn't change the polynomial value when evaluated in the extension field.
-    # Here, as the determinant of the new matrix is always 1, we know that there always exists 
-    # an invertible element mod pol_e.
     
-    # Note: This function is a general search for the inverse but can be improved if the coefficient 
-    # of degree 0 is odd, by applying the search of the function 'search_m_with_even_0deg'
+    # Note: This function is a general search for the inverse but can be improved if all coefficients 
+    # are even, by applying the search of the function 'search_m_with_even_deg'
     
     reference_polynomial = pol_e.change_ring(GF(2))
 
@@ -188,10 +184,10 @@ def search_polynomial_m(base, k:int, p:int, gamma, pol_e):
     Returns:
         Polynomial: polynomial invertible modulo pol_e
     """
-    no_optimisation = pol_e[0] & 1
+    no_optimisation = any(coef&1 for coef in pol_e)
     if no_optimisation:
-        return search_m_with_odd_0deg(k, p, gamma, pol_e)
-    return search_m_with_even_0deg(base, pol_e)
+        return search_m_with_odd_deg(k, p, gamma, pol_e)
+    return search_m_with_even_degs(base, pol_e)
 
 
 def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=64):

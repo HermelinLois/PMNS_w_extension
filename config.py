@@ -12,6 +12,7 @@ sys.path.append(str(Path(__file__).parent / "pmns_factory"))
 from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import montgomery_reduction
 from pmns_factory.pmns_core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
 import pmns_factory.pmns_E_type0 as type0
+import pmns_factory.pmns_E_type1 as type1
 
 
 
@@ -37,7 +38,9 @@ REDUCTION_CONFIG = {
 
 # type of external reduction polynomial usable
 E_TYPE0 = 0
+E_TYPE1 = 1
 
 PMNS_CONFIG = {
     E_TYPE0 : type0,
+    E_TYPE1 : type1,
 }
