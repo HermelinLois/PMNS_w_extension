@@ -16,7 +16,6 @@ from concurrent.futures import ProcessPoolExecutor
 
 import signal
 from cysignals.signals import AlarmInterrupt
-import AlarmInterrupt
 class MyTimeoutError(Exception):
     pass
 
