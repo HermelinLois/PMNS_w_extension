@@ -56,8 +56,7 @@ def square_and_multiply(base, exponent, mod=None):
     Returns:
         result (same type as base) : value of base ** exponent % mod
     """
-    assert mod is None or mod > 1
-
+    
     if mod is None:
         return square_and_multiply_no_mod(base, exponent)
     return square_and_multiply_mod(base, exponent, mod)

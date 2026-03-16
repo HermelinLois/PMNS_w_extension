@@ -116,6 +116,7 @@ def search_roots(p:int, k:int, pol_e, K) -> list:
         p (int): prime use to create extension field
         k (int): degree of the extension
         pol_e (polynomial): polynomial use for external reduction in PMNS
+        K (field) : named extension field used with PMNS construction
 
     Returns:
         list (extension field element): roots of pol_e in GF(p^k) suitable for PMNS representation

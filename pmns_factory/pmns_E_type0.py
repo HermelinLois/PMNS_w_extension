@@ -111,9 +111,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
 
     parameters_not_found = True
     result = None
-    round_count = 0
     while parameters_not_found:
-        round_count += 1
         # construction of the polynomial pol_e
         pol_e = gen_pol_e(n, lamb)
         roots = search_roots(p, k, pol_e, K)
@@ -128,4 +126,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
 
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}, round_count
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}

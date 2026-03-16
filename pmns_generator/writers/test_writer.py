@@ -1,7 +1,7 @@
 from sage.all import randint
 from jinja2 import Environment, FileSystemLoader
 from pmns_factory.pmns_core.parameters.params_gestion import search_m_and_n
-from pmns_factory.pmns_core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_gamma_base
+from pmns_factory.pmns_core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
 import pmns_generator.writers.format_to_c.int_to_c as fint
 from pathlib import Path
 import sys
@@ -24,7 +24,7 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
         pmns_params.update({'M': M, 'N':N})
 
     K = gamma.parent()
-    gamma_base = gen_gamma_base(gamma, k)
+    transition_matrix = gen_transition_matrix(gamma, k)
 
     # name use to recompose decompose int128 in C
     fname = "INT128"
@@ -43,8 +43,8 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
         A = K([randint(0, p) for _ in range(k)])
         B = K([randint(0, p) for _ in range(k)])
         
-        Pa = convert_element_to_pmns_montgomery(A, gamma_base, **pmns_params)
-        Pb = convert_element_to_pmns_montgomery(B, gamma_base, **pmns_params)
+        Pa = convert_element_to_pmns_montgomery(A, transition_matrix, **pmns_params)
+        Pb = convert_element_to_pmns_montgomery(B, transition_matrix, **pmns_params)
         
         P = (Pa * Pb) % E
         R = reduction_method(P, **usefull_args)

@@ -23,9 +23,9 @@ def alarm_handler(signum, frame):
 
 GOOD = "good"
 BAD = "bad"
-RANGE_TEST = [64, 96, 128, 192, 256, 384, 512, 767, 1024]
-TIMEOUT = 60
-N_TEST = 1000
+RANGE_TEST = [256, 512]
+TIMEOUT = 120
+N_TEST = 2000
 
 def single_test_pmns(args):
     p, k, pmns_module, TIMEOUT = args
@@ -34,7 +34,7 @@ def single_test_pmns(args):
     signal.alarm(TIMEOUT)
     try:
         pmns, round_count = pmns_module.gen_parameters(p, k)
-        return {"p": p, "type" : pmns_module.__name__, "status": GOOD,  "norm" : sum(abs(c) for c in pmns['E'].list()), "count": round_count}
+        return {"p": p, "type" : pmns_module.__name__, "status": GOOD,  "norm" : sum(abs(c) for c in pmns['E'].list()), "count": round_count, "det": pmns['L'].det()}
 
     except (AlarmInterrupt, MyTimeoutError):
         return {"p": p, "type" : pmns_module.__name__, "status": BAD, "error": "TIMEOUT"}
@@ -57,7 +57,6 @@ def write_all_data(f, results):
             f.write("\n")
             
 def write_resume_data(f, results):
-    #average round pour la taille et average norme pour la taille
     STATUS = 0
     ROUND = 1
     NORM = 2
@@ -76,9 +75,11 @@ def write_resume_data(f, results):
             data[idx][STATUS] += 1
             data[idx][ROUND] += e['count']
             data[idx][NORM] += e['norm']
-            
-    W = (6, 6, len(f"{N_TEST}/{N_TEST}"), 13, 8)
-    header = f"{'SIZE':>{W[0]}} | {'TYPE':<{W[1]}} | {'GOOD':>{W[2]}} | {'ROUND_COUNT':>{W[3]}} | {'NORM':>{W[4]}}"
+    
+
+    f.write("#{TIMEOUT = }")
+    W = (10, 10, len(f"{N_TEST}/{N_TEST}"), 10, 10, 10)
+    header = f"{'SIZE':>{W[0]}} | {'TYPE':>{W[1]}} | {'GOOD':>{W[2]}} | {'ROUND_COUNT':>{W[3]}} | {'NORM':>{W[4]}} | {'DET':>{W[5]}}"
     sep_thick = '=' * len(header)
     sep_thin  = '-' * len(header)
 
@@ -88,30 +89,36 @@ def write_resume_data(f, results):
 
     for idx in range(len(RANGE_TEST)):
         size = RANGE_TEST[idx]
-        d0 = datas[pmns_E_type0.__name__][idx]
-        d1 = datas[pmns_E_type1.__name__][idx]
+        type0 = datas[pmns_E_type0.__name__][idx]
+        type1 = datas[pmns_E_type1.__name__][idx]
         avg = lambda d, i: float(d[i]) / d[STATUS] if d[STATUS] else 0.0
-        f.write(f"{size:>{W[0]}} | {'TYPE0':<{W[1]}} | {f'{d0[STATUS]}/{N_TEST}':>{W[2]}} | {avg(d0, ROUND):>{W[3]}.2f} | {avg(d0, NORM):>{W[4]}.2f}\n")
-        f.write(f"{size:>{W[0]}} | {'TYPE1':<{W[1]}} | {f'{d1[STATUS]}/{N_TEST}':>{W[2]}} | {avg(d1, ROUND):>{W[3]}.2f} | {avg(d1, NORM):>{W[4]}.2f}\n")
+        f.write(f"{size:>{W[0]}} | {'TYPE0':<{W[1]}} | {f'{type0[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type0, ROUND):>{W[3]}.2f} | {avg(type0, NORM):>{W[4]}.2f} | {avg(type0, DET)}|\n")
+        f.write(f"{size:>{W[0]}} | {'TYPE1':<{W[1]}} | {f'{type1[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type1, ROUND):>{W[3]}.2f} | {avg(type1, NORM):>{W[4]}.2f} | {avg(type0, DET)}\n")
         f.write(sep_thin + "\n")
         
-        
+
+def gen_prime(m):
+    return random_prime(2**m - 1, lbound=2**(m-1))
 
 if __name__ == "__main__":
     k = 2
 
-    tasks = []
-    print("start generation of test parameters")
-    for m in RANGE_TEST :
-        for _ in range(N_TEST):
-            p = random_prime(2**m - 1, lbound=2**(m-1))
-            tasks.append((p, k, pmns_E_type0, TIMEOUT))
-            tasks.append((p, k, pmns_E_type1, TIMEOUT))
-    print("end of the generation")
+    primes_sizes = []
+    for m in RANGE_TEST:
+        primes_sizes.extend([m] * N_TEST)
+
+    primes = []
+    with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor :
+        primes = list(tqdm(executor.map(gen_prime, primes_sizes), total=len(RANGE_TEST) * N_TEST, desc="Prime generation"))
     
+    tasks = []
+    for p in primes:
+        tasks.append((p, k, pmns_E_type0, TIMEOUT))
+        tasks.append((p, k, pmns_E_type1, TIMEOUT))
+
     results = []
     with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
-        results = list(tqdm(executor.map(single_test_pmns, tasks), total=len(tasks), desc="Tests PMNS"))
+        results = list(tqdm(executor.map(single_test_pmns, tasks), total=len(tasks), desc="PMNS generation"))
 
     s_results = sorted(results, key=lambda x: (x["p"], x["type"]))
     

@@ -10,7 +10,7 @@ from pmns_core.operations.reductions.montgomery_reduction import montgomery_redu
 
 PR = PolynomialRing(ZZ, "X")
 
-def gen_gamma_base(gamma, k: int) -> matrix:
+def gen_transition_matrix(gamma, k: int) -> matrix:
     """
     Generate base of extension field using powers of gamma.
 
@@ -21,42 +21,37 @@ def gen_gamma_base(gamma, k: int) -> matrix:
     Returns:
         matrix: each column is gamma^i for i=0..k-1
     """
-    gamma_base = [gamma**i for i in range(k)]
-    return matrix([g._vector_() for g in gamma_base]).transpose()
+    mat = matrix([(gamma**i)._vector_() for i in range(k)])
+    return mat.inverse()
 
 
-def convert_element_to_polynomial(element, gamma_base: matrix):
+def convert_element_to_polynomial(element, gamma, transition_matrix: matrix):
     """
     Represent an extension field element as a polynomial in gamma.
 
     Args:
         element (extension field element): element to represent
-        gamma_base (matrix): matrix of powers of gamma (columns = powers)
+        transition_matrix (matrix): matrix from canonical to gamma basis
 
     Returns:
         Polynomial: polynomial representing the element
     """
-    target_values = vector(element._vector_())
-    gamma_decomposition = gamma_base.solve_right(target_values)
+    gamma_decomposition = element._vector_() * transition_matrix
 
     polynomial_of_element = PR(list(gamma_decomposition))
-
-    # gamma_base[1] corresponds to gamma^1
-    K = element.parent()
-    gamma = K(list(gamma_base.column(1)))
     
     assert polynomial_of_element(gamma) == element, f"error in the construction, polynomial doesn't represent {element=}"
 
     return polynomial_of_element
 
 
-def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
+def convert_element_to_pmns_montgomery(element, transition_matrix, **kwargs):
     """
     Convert an extension field element to PMNS using Montgomery reduction.
 
     Args:
         element (extension field element): element to convert
-        gamma_base (matrix): powers of chosen gamma
+        transition_matrix (matrix):  matrix from canonical to gamma basis
         kwargs: must include phi_pow, rho, gamma, M, N, E
 
     Returns:
@@ -65,17 +60,13 @@ def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
     phi_pow, rho, gamma = kwargs['phi_pow'], kwargs['rho'], kwargs['gamma']
     M, N, E = kwargs['M'], kwargs['N'], kwargs['E']
 
-    # retrieve needed parameters from given elements
-    K = element.parent()
-    gamma = K(list(gamma_base.column(1)))
-
     # retrieve parameters from given elements
     n = E.degree()
     phi = 2**phi_pow
 
     alpha = element * phi**n
-    V = convert_element_to_polynomial(alpha, gamma_base)   
-
+    V = convert_element_to_polynomial(alpha, gamma, transition_matrix)   
+    
     for i in range(n):
         V = montgomery_reduction(V, M, N, E, gamma, phi)
 
@@ -83,8 +74,3 @@ def convert_element_to_pmns_montgomery(element, gamma_base, **kwargs):
     assert all(abs(c) < rho for c in V), f"{rho=} too low for {element=}"
 
     return V
-
-
-#TODO implement babai convertion to pmns
-def convert_element_to_pmns_babai(element, **kwargs):
-    raise Warning("method not implemented yet")
