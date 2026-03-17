@@ -39,6 +39,7 @@ REDUCTION_CONFIG = {
 E_TYPE0 = 0
 E_TYPE1 = 1
 E_TYPE2 = 2
+
 PMNS_CONFIG = {
     E_TYPE0 : type0,
     E_TYPE1 : type1,

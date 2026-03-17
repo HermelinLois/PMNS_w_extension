@@ -2,6 +2,7 @@ from writers import code_writer, params_writer, test_writer
 from sage.all import random_prime
 from pathlib import Path
 import sys
+import argparse
 
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -12,8 +13,7 @@ ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
 
-from config import *
-
+from config import PMNS_CONFIG, REDUCTION_CONFIG
 
 def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
     assert Etype in PMNS_CONFIG.keys()
@@ -33,4 +33,17 @@ def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
     test_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  **pmns_params)
     
 
-write_pmns_data(1000, 128, 2, E_TYPE2, METHOD_BABAI)
+def write_all():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-ntest", type=int, default=1000)
+    parser.add_argument("-nbits", type=int, default=128)
+    parser.add_argument("-k", type=int, default=2)
+    parser.add_argument("-Etype", type=int, default=0)
+    parser.add_argument("-method", type=int, default=0)
+
+    args = parser.parse_args()
+
+    write_pmns_data(args.ntest, args.nbits, args.k, args.Etype, args.method)
+
+if __name__ == "__main__":
+    write_all()
