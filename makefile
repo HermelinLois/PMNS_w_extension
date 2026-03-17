@@ -5,11 +5,11 @@ TARGET = pmns
 
 # ---- CONFIGURABLE PARAMETERS ----
 NTEST ?= 1000
-BITS ?= 128
-EXTENSION ?= 2
+NBITS ?= 128
+K ?= 2
 OPT ?= -O3
-TYPE ?= 0
-METHOD ?= 1
+ETYPE ?= 0
+METHOD ?= 0
 
 # ---- SCRIPTS PATH ----
 C_GEN = pmns_generator/orchestrator.py
@@ -22,9 +22,9 @@ $(TARGET): $(SRC_GEN)
 	$(CC) $(OPT) $(SRC_GEN) -o $(TARGET)
 
 $(SRC_GEN): $(C_GEN)
-	$(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(BITS) -k $(EXTENSION) -Etype $(TYPE) -method $(METHOD)
+	$(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) -method $(METHOD)
 
 clean:
 	rm -f $(SRC_GEN) $(TARGET)
 
-.PHONY: all clean
+.PHONY: all clean $(SRC_GEN)
