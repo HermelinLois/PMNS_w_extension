@@ -1,5 +1,5 @@
 from sage.all import PolynomialRing, ZZ, ceil, Integer, GF
-from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead
+from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
 from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
 PR = PolynomialRing(ZZ, "X")
@@ -72,4 +72,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str ="z") -> dict:
             alpha, beta, n = increase_parameters(pol_e, p, k, phi)
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': PR(gamma.parent().modulus()), 'p': p, 'k':k}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k}

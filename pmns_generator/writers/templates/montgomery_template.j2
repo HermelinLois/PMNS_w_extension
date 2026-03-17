@@ -1,25 +1,11 @@
-#define external_reduction(RETURN_TYPE, R, VECT, MAT, WITH_MOD){\
-    for (int i=0; i<DEGREE; i++){\
-        RETURN_TYPE coef = 0;\
+#define {{method_name}}(RESULT, POLYNOMIAL){\
+    uint64_t Q[DEGREE] = {0};\
+    __int128 T[DEGREE] = {0};\
 \
-        for (int j=0; j<DEGREE; j++){\
-            coef += (RETURN_TYPE) VECT[j] * MAT[j][i];\
-        }\
-\
-        R[i] = WITH_MOD? (uint64_t)coef : coef;\
-    }\
-}
-
-
-#define {{method_name}}(res, R){\
-    uint64_t Q[DEGREE];\
-    __int128 T[DEGREE];\
-\
-    external_reduction(uint64_t, Q, R, MAT_N, 1);\
-    external_reduction(__int128, T, Q, MAT_M, 0);\
+    ext_red_w_matrix(uint64_t, Q, POLYNOMIAL, MAT_N);\
+    ext_red_w_matrix(__int128, T, Q, MAT_M);\
 \
     for (int deg=0; deg<DEGREE; deg++){\
-        res[deg] = (T[deg] + R[deg]) >> 64;\
+        RESULT[deg] = (T[deg] + POLYNOMIAL[deg]) >> 64;\
     }\
 }
-

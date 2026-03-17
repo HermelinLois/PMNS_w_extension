@@ -6,6 +6,7 @@
 from sage.all import random_prime
 import pmns_E_type0
 import pmns_E_type1
+import optimised_pmns_E_type0
 from tqdm import tqdm
 
 import multiprocessing
@@ -14,6 +15,8 @@ from concurrent.futures import ProcessPoolExecutor
 import signal
 from cysignals.signals import AlarmInterrupt
 
+GOOD = "good"
+BAD = "bad"
 
 class MyTimeoutError(Exception):
     pass
@@ -21,11 +24,15 @@ class MyTimeoutError(Exception):
 def alarm_handler(signum, frame):
     raise MyTimeoutError("over time limit")
 
-GOOD = "good"
-BAD = "bad"
-RANGE_TEST = [256, 512]
+
+# ==========================================
+# Tests parameters
+# ==========================================
+RANGE_TEST = [64]
 TIMEOUT = 120
 N_TEST = 2000
+# ==========================================
+
 
 def single_test_pmns(args):
     p, k, pmns_module, TIMEOUT = args
@@ -63,6 +70,7 @@ def write_resume_data(f, results):
     datas = {
         pmns_E_type0.__name__: [[0, 0, 0] for _ in range(len(RANGE_TEST))],
         pmns_E_type1.__name__: [[0, 0, 0] for _ in range(len(RANGE_TEST))],
+        optimised_pmns_E_type0.__name__: [[0, 0, 0] for _ in range(len(RANGE_TEST))],
     }
     
     for e in results:
@@ -79,7 +87,7 @@ def write_resume_data(f, results):
 
     f.write("#{TIMEOUT = }")
     W = (10, 10, len(f"{N_TEST}/{N_TEST}"), 10, 10, 10)
-    header = f"{'SIZE':>{W[0]}} | {'TYPE':>{W[1]}} | {'GOOD':>{W[2]}} | {'ROUND_COUNT':>{W[3]}} | {'NORM':>{W[4]}} | {'DET':>{W[5]}}"
+    header = f"{'SIZE':>{W[0]}} | {'TYPE':>{W[1]}} | {'GOOD':>{W[2]}} | {'ROUND_COUNT':>{W[3]}} | {'NORM':>{W[4]}}"
     sep_thick = '=' * len(header)
     sep_thin  = '-' * len(header)
 
@@ -91,9 +99,11 @@ def write_resume_data(f, results):
         size = RANGE_TEST[idx]
         type0 = datas[pmns_E_type0.__name__][idx]
         type1 = datas[pmns_E_type1.__name__][idx]
+        type2 = datas[optimised_pmns_E_type0.__name__][idx]
         avg = lambda d, i: float(d[i]) / d[STATUS] if d[STATUS] else 0.0
-        f.write(f"{size:>{W[0]}} | {'TYPE0':<{W[1]}} | {f'{type0[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type0, ROUND):>{W[3]}.2f} | {avg(type0, NORM):>{W[4]}.2f} | {avg(type0, DET)}|\n")
-        f.write(f"{size:>{W[0]}} | {'TYPE1':<{W[1]}} | {f'{type1[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type1, ROUND):>{W[3]}.2f} | {avg(type1, NORM):>{W[4]}.2f} | {avg(type0, DET)}\n")
+        f.write(f"{size:>{W[0]}} | {'TYPE0':<{W[1]}} | {f'{type0[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type0, ROUND):>{W[3]}.2f} | {avg(type0, NORM):>{W[4]}.2f} |\n")
+        f.write(f"{size:>{W[0]}} | {'TYPE1':<{W[1]}} | {f'{type1[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type1, ROUND):>{W[3]}.2f} | {avg(type1, NORM):>{W[4]}.2f} |\n")
+        f.write(f"{size:>{W[0]}} | {'TYPE2':<{W[1]}} | {f'{type2[STATUS]}/{N_TEST}':>{W[2]}} | {avg(type2, ROUND):>{W[3]}.2f} | {avg(type2, NORM):>{W[4]}.2f} |\n")
         f.write(sep_thin + "\n")
         
 

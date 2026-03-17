@@ -4,7 +4,7 @@
 # and in txt format
 # ==================================
 
-from sage.all import PolynomialRing,ZZ
+from sage.all import PolynomialRing, ZZ, matrix
 from jinja2 import Environment, FileSystemLoader
 from .format_to_c.int_to_c import format_matrix
 from pathlib import Path
@@ -13,12 +13,12 @@ import sys
 CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates"
 ROOT_DIR = CURRENT_DIR.parent.parent
-
 ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
     
 from config import METHOD_MONTGOMERY, METHOD_BABAI
+from pmns_factory.pmns_core.parameters.matrix_gestion import gen_overflow_matrix
 
 PR = PolynomialRing(ZZ,"X")
 
@@ -28,8 +28,13 @@ def compute_additional_params(method, params:dict) -> None:
     n = E.degree()
     phi_pow = params['phi_pow']
 
+    external_reduction_matrix = gen_overflow_matrix(E)
+    zero_row = matrix(external_reduction_matrix.base_ring(), 1, external_reduction_matrix.ncols())
+
+    params.update({'ext_red_mat_str': format_matrix(external_reduction_matrix.stack(zero_row))})
+
     if method == METHOD_MONTGOMERY:
-        from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import gen_external_reduction_matrix
+        from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import gen_mn_reduction_matrix
         from pmns_factory.pmns_core.parameters.params_gestion import search_m_and_n
         
         phi = 2**phi_pow
@@ -38,7 +43,7 @@ def compute_additional_params(method, params:dict) -> None:
         gamma = params['gamma']
         
         M, N = search_m_and_n(k, p, gamma, L, E, phi)
-        mat_m, mat_n = gen_external_reduction_matrix(M, E, phi)
+        mat_m, mat_n = gen_mn_reduction_matrix(M, E, phi)
 
         params['phi'] = phi
         params.update({'n': n, 'mat_m_str': format_matrix(mat_m), 'mat_n_str': format_matrix(mat_n), 'M': M, 'N': N})

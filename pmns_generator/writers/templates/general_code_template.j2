@@ -4,9 +4,51 @@
 #include "param.h"
 #include "test.h"
 
+
+#define ext_red_w_matrix(RETURN_TYPE, RESULT, POLYNOMIAL, MATRIX){\
+    for (int j=0; j<DEGREE; j++){\
+        RETURN_TYPE pi = (RETURN_TYPE) (POLYNOMIAL)[j];\
+        for (int i=0; i<DEGREE; i++){\
+            RESULT[i] += pi * (MATRIX)[j][i];\
+        }\
+    }\
+}
+
+
 {% include reduction_file %}
 
+
+void product(int64_t *res, int64_t *PolA, int64_t *PolB){
+    // compute polynomial product between polynomial PolA abd polynomial PolB
+    // with external reduction and internal reduction using choosen method
+    const int PROD_SIZE = 2*DEGREE;
+    __int128 P[PROD_SIZE];
+    
+    // pre-set polynomials to 0 elements
+    // an additional 0 has been created to not conflit with memory call
+    // in "ext_red_w_matrix" function
+
+    for (int deg=0; deg<PROD_SIZE; deg++) P[deg]=0;
+
+    // compute polynomial product without external reduction
+    for (int degA=0; degA<DEGREE; degA++){
+        __int128 ai = PolA[degA];
+        for (int degB=0; degB<DEGREE; degB++){
+            P[degA + degB] += ai * PolB[degB];
+        }
+    }
+
+    // execute external reduction
+    ext_red_w_matrix(__int128, P, P + DEGREE, EXT_MAT);
+
+    // reduce polynomial using choosen reduction method
+    {{method_name}}(res, P);
+}
+
+
 void print_pol(int64_t *P){
+    // print vector link to a polynomail with coefficients 
+    // of 64 bits at most
     for (int idx=0; idx<DEGREE; idx++){
         printf("%ld  ", P[idx]);
     }
@@ -15,6 +57,7 @@ void print_pol(int64_t *P){
 
 
 void check_validity(int64_t *P, int64_t *C){
+    // check if test values are the sama than values compute with python
     for (int i=0; i<DEGREE; i++){
         if(C[i] != P[i]){
             printf("polynomial found by python : ");
@@ -30,8 +73,8 @@ int main(){
     int64_t res[DEGREE];
 
     for (int idx=0; idx<N_TEST; idx++){
-        {{method_name}}(res, P[idx]);
-        check_validity(res, R[idx]);
+        product(res, POLA[idx], POLB[idx]);
+        check_validity(res, REDUCTION[idx]);
     }
     printf("ok\n");
     return 0;

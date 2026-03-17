@@ -12,7 +12,7 @@ ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
 
-from config import PMNS_CONFIG, REDUCTION_CONFIG, E_TYPE0, METHOD_MONTGOMERY, METHOD_BABAI
+from config import *
 
 
 def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
@@ -32,4 +32,5 @@ def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
     params_writer.write_params(OUTPUT_DIR, method, pmns_params)
     test_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  **pmns_params)
     
-write_pmns_data(1000, 128, 2, E_TYPE0, METHOD_BABAI)
+
+write_pmns_data(1000, 128, 2, E_TYPE2, METHOD_BABAI)

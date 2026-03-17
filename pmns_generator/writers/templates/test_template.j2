@@ -3,8 +3,8 @@
 #define N_TEST {{n_test}}
 #define N_COEF {{n}}
 
-#define {{fname}}(hi, lo) ((__int128) hi << 64 | (unsigned __int128) lo)
+static int64_t POLA [N_TEST][N_COEF] = {{polA_str}}
 
-static __int128 P [N_TEST][N_COEF] = {{prods_str}}
+static int64_t POLB [N_TEST][N_COEF] = {{polB_str}}
 
-static int64_t R [N_TEST][N_COEF] = {{reds_str}}
+static int64_t REDUCTION [N_TEST][N_COEF] = {{reds_str}}

@@ -1,12 +1,15 @@
 #include <stdint.h>
 
 #define DEGREE {{n}}
+
+static const int64_t EXT_MAT [DEGREE][DEGREE] = {{ext_red_mat_str}}
 {% if is_method_montgomery %}
 static const int64_t MAT_M [DEGREE][DEGREE] = {{mat_m_str}}
 
 static const int64_t MAT_N [DEGREE][DEGREE] = {{mat_n_str}}
 
-{% else %}#define H1 {{h1}}
+{% else %}
+#define H1 {{h1}}
 #define H2 {{h2}}
 
 static const int64_t L [DEGREE][DEGREE] = {{L_str}}

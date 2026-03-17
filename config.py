@@ -13,8 +13,7 @@ from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import mo
 from pmns_factory.pmns_core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
 import pmns_factory.pmns_E_type0 as type0
 import pmns_factory.pmns_E_type1 as type1
-
-
+import pmns_factory.optimised_pmns_E_type0 as opType0
 
 # method available
 METHOD_MONTGOMERY = 0
@@ -39,8 +38,9 @@ REDUCTION_CONFIG = {
 # type of external reduction polynomial usable
 E_TYPE0 = 0
 E_TYPE1 = 1
-
+E_TYPE2 = 2
 PMNS_CONFIG = {
     E_TYPE0 : type0,
     E_TYPE1 : type1,
+    E_TYPE2 : opType0,
 }

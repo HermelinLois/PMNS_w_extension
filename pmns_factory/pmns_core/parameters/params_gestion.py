@@ -260,3 +260,19 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: int) -> in
         n += 1
         
     return n
+
+def cast_polynomial_to_minimal_representation(pol, p):
+    """
+    Retrun polynomial pol with coefficients in signed samll representation with modulus p.
+
+    Args:
+        p (Interger): prime used to construction extension field
+        pol(Polynomial): polynomial that need to have reduced coefficients
+
+    Returns:
+        Polynomial: return polynomial with coefficients in [-p//2, p//2]
+        
+    Exemple : (p-1)*X => -X[p]
+    """
+    coefficients = [int(c) if c <= p//2 else int(c)-p for c in pol]
+    return PR(coefficients)

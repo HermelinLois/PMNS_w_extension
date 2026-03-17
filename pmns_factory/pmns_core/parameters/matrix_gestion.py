@@ -54,10 +54,10 @@ def gen_overflow_matrix(pol_e):
     X = PR("X")
 
     matrix_coefficients = []
-    for i in range(n - 1):
+    for i in range(n-1):
         poly_mod = X**(n + i) % pol_e
         # Pad coefficients to length n
-        coeffs = list(poly_mod) + [0] * (n - len(list(poly_mod)))
+        coeffs = list(poly_mod) + [0] * (n - poly_mod.degree()-1)
         matrix_coefficients.append(coeffs)
     
     return matrix(ZZ, matrix_coefficients)

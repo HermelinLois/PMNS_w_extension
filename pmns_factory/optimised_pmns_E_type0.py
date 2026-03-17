@@ -3,7 +3,7 @@
 # specific structure of the extension field
 
 from sage.all import PolynomialRing, ZZ, vector, ceil, Integer, GF, random_prime, factor, randint, gcd, matrix
-from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead
+from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
 from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
 # Cantor-Zassenhaus
@@ -38,9 +38,7 @@ def construct_irreducible_polynomial(k, p, phi_pow):
 
     for epsilon in range(2, limit):
         if all(pow(epsilon, exp, p) != 1 for exp in exponents):
-            is_good = (pow(epsilon, (p - 1) // 4, p) != 1) if k%4 == 0 else True 
-            if is_good:
-                return X**k - epsilon
+            return X**k - epsilon
 
 
 def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
@@ -88,7 +86,6 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
     # of a generic form
     mod = construct_irreducible_polynomial(k, p, phi_pow)
     K = GF(p**k, name=name, modulus=mod)
-    print("modulus used : ",mod)
 
     parameters_not_found = True
     result = None
@@ -106,12 +103,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
             lamb, n = increase_parameters(pol_e, p, k, phi)
 
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': mod, 'p': p, 'k':k}
-
-k = 3
-m = 128
-p = random_prime(2**m - 1, lbound=2**(m-1))
-pmns = gen_parameters(p, k)
-
-gamma = pmns['gamma']
-K = gamma.parent()
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k}

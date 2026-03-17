@@ -9,7 +9,7 @@ from ...math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 
-def gen_external_reduction_matrix(M, E, phi: int):
+def gen_mn_reduction_matrix(M, E, phi: int):
     """
     Generate matrices M and N for external reduction in PMNS.
 

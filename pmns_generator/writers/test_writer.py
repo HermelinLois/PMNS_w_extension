@@ -7,9 +7,13 @@ from pathlib import Path
 import sys
 import inspect
 
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
+
 CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates"
-    
+
+
 def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict) -> None:
     # we use montgomery reduction to represent element in PMNS
     k, p, phi_pow = pmns_params['k'], pmns_params['p'], pmns_params['phi_pow']
@@ -18,8 +22,9 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
 
     phi = 2**phi_pow
 
+    # new elements generation to allow pmns representation using Montgomery
     constructed_parameters = pmns_params.keys()
-    if 'M' not in constructed_parameters and 'N' not in constructed_parameters:
+    if 'M' not in constructed_parameters or 'N' not in constructed_parameters:
         M, N = search_m_and_n(k, p, gamma, L, E, phi)
         pmns_params.update({'M': M, 'N':N})
 
@@ -34,11 +39,11 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
     usefull_args = {k: v for k, v in pmns_params.items() if k in sig.parameters}
 
 
-
-
-    # create and stock polynomial product
-    Prods = []
-    Reds = []
+    # create random elements that will be turned into PMNS representation
+    # save those elements and compute reduce product of element
+    polynomials_a = []
+    polynomials_b = []
+    polynomials_reduced = []
     for _ in range(n_test):
         A = K([randint(0, p) for _ in range(k)])
         B = K([randint(0, p) for _ in range(k)])
@@ -49,13 +54,14 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
         P = (Pa * Pb) % E
         R = reduction_method(P, **usefull_args)
         
-        Prods.append(P.list())
-        Reds.append(R.list())
-        
+        polynomials_a.append(Pa.list())
+        polynomials_b.append(Pb.list())
+        polynomials_reduced.append(R.list())
+
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("test_template.j2")
     
-    params = {'n': E.degree(), 'n_test': n_test,'fname': fname, 'prods_str': fint.format_matrix128(Prods,fname), 'reds_str': fint.format_matrix(Reds)}
+    params = {'n': E.degree(), 'n_test': n_test,'fname': fname, 'polA_str': fint.format_matrix(polynomials_a), 'polB_str': fint.format_matrix(polynomials_b), 'reds_str': fint.format_matrix(polynomials_reduced)}
     rendered_params = template.render(params)
     
     output_path = Path(output_dir) / "test.h"
