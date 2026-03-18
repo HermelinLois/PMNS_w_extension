@@ -7,7 +7,6 @@ import argparse
 
 CURRENT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = CURRENT_DIR.parent
-OUTPUT_DIR = ROOT_DIR / "generated_code"
 
 ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
@@ -15,10 +14,10 @@ if ROOT_PATH not in sys.path:
 
 from config import PMNS_CONFIG, REDUCTION_CONFIG
 
-def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int) -> None:
+def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -> None:
     assert Etype in PMNS_CONFIG.keys()
     assert method in REDUCTION_CONFIG.keys()
-
+    OUTPUT_DIR = ROOT_DIR / name
     OUTPUT_DIR.mkdir(exist_ok=True)
 
     p = random_prime(2**m - 1, lbound=2**(m-1))
@@ -40,10 +39,11 @@ def write_all():
     parser.add_argument("-k", type=int, default=2)
     parser.add_argument("-Etype", type=int, default=0)
     parser.add_argument("-method", type=int, default=0)
+    parser.add_argument("-name", type=str, default="generated_code")
 
     args = parser.parse_args()
 
-    write_pmns_data(args.ntest, args.nbits, args.k, args.Etype, args.method)
+    write_pmns_data(args.ntest, args.nbits, args.k, args.Etype, args.method, args.name)
 
 if __name__ == "__main__":
     write_all()
