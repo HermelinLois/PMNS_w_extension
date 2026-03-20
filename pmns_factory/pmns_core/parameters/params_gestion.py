@@ -146,9 +146,8 @@ def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
 
     reduced_base = base.LLL()
     
-    # Note : with this structure, there always exists an element invertible in this base if E is irrecdutible.
-    # we evaluate polynomial in an extension field of characteristic p. Our construction therefore
-    # doesn't change the polynomial value when evaluated in the extension field.
+    # Note : we evaluate polynomial in an extension field of characteristic p. 
+    # therefore, our construction doesn't change the polynomial value when evaluated in the extension field.
     
     # Note: This function is a general search for the inverse but can be improved if all coefficients 
     # are even, by applying the search of the function 'search_m_with_even_deg'

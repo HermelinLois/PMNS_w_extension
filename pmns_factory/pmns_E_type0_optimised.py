@@ -30,12 +30,10 @@ def construct_irreducible_polynomial(k, p, phi_pow):
     for q in primes_k:
         if (p - 1) % q != 0:
             return None
-
     # search any element wich isn't a q power of k where q is all prime factor of k
     # generators of Z/pZ are elements wich satisfy those condition 
     exponents = [(p - 1) // q for q in primes_k]
     limit = min(2**(phi_pow), p)
-
     for epsilon in range(2, limit):
         if all(pow(epsilon, exp, p) != 1 for exp in exponents):
             return X**k - epsilon
@@ -92,6 +90,7 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
     while parameters_not_found:
         # construction of the polynomial pol_e
         pol_e = gen_pol_e(n, lamb)
+        print(pol_e)
         roots = search_roots(p, k, pol_e, K)
 
         if roots:

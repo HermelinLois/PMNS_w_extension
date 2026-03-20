@@ -17,6 +17,7 @@ from config import PMNS_CONFIG, REDUCTION_CONFIG
 def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -> None:
     assert Etype in PMNS_CONFIG.keys()
     assert method in REDUCTION_CONFIG.keys()
+    
     OUTPUT_DIR = ROOT_DIR / name
     OUTPUT_DIR.mkdir(exist_ok=True)
 

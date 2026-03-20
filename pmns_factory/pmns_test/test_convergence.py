@@ -1,4 +1,4 @@
-# ==================================================
+"""# ==================================================
 # test_generation.py
 # File to test a PMNS construction with specific E type
 # ==================================================
@@ -134,4 +134,4 @@ if __name__ == "__main__":
     
     with open(f"tests_result{k}.txt", "a") as f:
         #write_all_data(f, s_results)
-        write_resume_data(f, results)
+        write_resume_data(f, results)"""

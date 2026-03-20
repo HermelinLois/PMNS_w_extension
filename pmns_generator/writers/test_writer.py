@@ -37,12 +37,7 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
     # choose element for reduction method
     sig = inspect.signature(reduction_method)
     usefull_args = {k: v for k, v in pmns_params.items() if k in sig.parameters}
-
-
-    "============================"
-    M = pmns_params['M']
-    print("M = ", M)
-    "============================"    
+  
     # create random elements that will be turned into PMNS representation
     # save those elements and compute reduce product of element
     polynomials_a = []
