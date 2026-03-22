@@ -8,7 +8,6 @@ from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates"
-# a donner par orchestrator :UTPU_DIR = CURRENT_DIR.resolve().parents[2]
 
 def write_c_code(output_dir, config):
     

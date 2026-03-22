@@ -1,14 +1,10 @@
 from sage.all import randint
 from jinja2 import Environment, FileSystemLoader
-from pmns_factory.pmns_core.parameters.params_gestion import search_m_and_n
-from pmns_factory.pmns_core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
+from pmns_factory.core.parameters.params_gestion import search_m_and_n
+from pmns_factory.core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
 import pmns_generator.writers.format_to_c.int_to_c as fint
 from pathlib import Path
-import sys
 import inspect
-
-import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
 
 CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates"

@@ -18,7 +18,7 @@ if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
     
 from config import METHOD_MONTGOMERY, METHOD_BABAI
-from pmns_factory.pmns_core.parameters.matrix_gestion import gen_overflow_matrix
+from pmns_factory.core.parameters.matrix_gestion import gen_overflow_matrix
 
 PR = PolynomialRing(ZZ,"X")
 
@@ -34,8 +34,8 @@ def compute_additional_params(method, params:dict) -> None:
     params.update({'ext_red_mat_str': format_matrix(external_reduction_matrix.stack(zero_row))})
 
     if method == METHOD_MONTGOMERY:
-        from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import gen_mn_reduction_matrix
-        from pmns_factory.pmns_core.parameters.params_gestion import search_m_and_n
+        from pmns_factory.core.operations.reductions.montgomery_reduction import gen_mn_reduction_matrix
+        from pmns_factory.core.parameters.params_gestion import search_m_and_n
         
         phi = 2**phi_pow
         k = params['k']
@@ -50,7 +50,7 @@ def compute_additional_params(method, params:dict) -> None:
         return
         
     if method == METHOD_BABAI:
-        from pmns_factory.pmns_core.operations.reductions.babai_reduction import gen_params_for_babai
+        from pmns_factory.core.operations.reductions.babai_reduction import gen_params_for_babai
         
         rho = params['rho']
 

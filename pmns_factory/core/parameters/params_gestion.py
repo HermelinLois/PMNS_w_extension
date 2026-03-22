@@ -5,8 +5,8 @@
 # ==================================================
 
 from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp
-from pmns_core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
-from pmns_core.math_utils import square_and_multiply
+from core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
+from core.math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 PR2 = PolynomialRing(GF(2), "X")

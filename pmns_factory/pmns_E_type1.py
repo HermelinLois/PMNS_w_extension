@@ -1,6 +1,6 @@
 from sage.all import PolynomialRing, ZZ, ceil, Integer, GF
-from pmns_core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
-from pmns_core.parameters.roots_gestion import is_gamma_feasible, search_roots
+from core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
+from core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
 PR = PolynomialRing(ZZ, "X")
 X = PR("X")

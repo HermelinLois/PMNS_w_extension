@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent / "pmns_factory"))
 
-from pmns_factory.pmns_core.operations.reductions.montgomery_reduction import montgomery_reduction
-from pmns_factory.pmns_core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
+from pmns_factory.core.operations.reductions.montgomery_reduction import montgomery_reduction
+from pmns_factory.core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
 import pmns_factory.pmns_E_type0 as type0
 import pmns_factory.pmns_E_type1 as type1
 import pmns_factory.pmns_E_type0_optimised as opType0

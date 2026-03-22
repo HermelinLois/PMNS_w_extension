@@ -6,7 +6,7 @@
 # ==================================================
 
 from sage.all import vector, matrix, PolynomialRing, ZZ
-from pmns_core.operations.reductions.montgomery_reduction import montgomery_reduction
+from core.operations.reductions.montgomery_reduction import montgomery_reduction
 
 PR = PolynomialRing(ZZ, "X")
 
