@@ -28,9 +28,6 @@ n = E.degree()
 PR = PolynomialRing(K,"X")
 Ek = PR(E)
 
-mod = PolynomialRing(GF(p),"X")(pmns['L'][0].list())
-print(mod)
-
 transition_matrix = gen_transition_matrix(gamma, k)
 params_head = "<=== PARAMETERS ===>"
 #print(params_head)
@@ -88,19 +85,42 @@ def decompose_babai(target, L):
 def convert_list_to_pol(coefs, X, k):
     return sum(c * X**(k * deg) for deg, c in enumerate(coefs))
 
-def gen_convertion_pol_basis(gamma, p, k, E, coef=1):
-    PR = PolynomialRing(GF(p), "X")
+def gen_convertion_pol_basis(gamma, p, k, E):
+    PR = PolynomialRing(ZZ, "X")
     X = PR.gen()
     n = E.degree()
 
     mu = max(vector(ZZ, gamma._vector_()), key=abs)
     mu_inv = Integer(pow(mu,-1, p))
 
-    base = gen_lattice(gamma, k, p, n, coef=coef)
-    decomposition = decompose_babai(mu_inv, base)
+    base1 = gen_lattice(gamma, k, p, n, coef=1)
+    base2 = gen_lattice(gamma, k, p, n, coef=4)
+    
+    c1 = PR(list(base1[1]))
+    c2 = PR(E*X**(1))
+    print(list(c2))
+    
+    print(c1)
+    print(c2)
+    print()
+    
+    
+    decomposition1 = decompose_babai(mu_inv, base1)
+    decomposition2 = decompose_babai(mu_inv, base2)
+    
+    P1 = convert_list_to_pol(decomposition1, X, k)
+    P2 = convert_list_to_pol(decomposition2, X, k) 
+    assert P1(gamma) == mu_inv
+    assert P2(gamma) == mu_inv
+    assert (P2%c2)(gamma == mu_inv)
 
-    pol_mu_inv = convert_list_to_pol(decomposition, X, k)
-    return pol_mu_inv
+    nP2 = P2%c2
+    print(P1)
+    print(P2)
+    print(nP2)
+    print(ZZ(nP2[n]*gamma**k+ nP2[0]) -p)
+    print(mu_inv)
+    return P1
 
 """ assert pol_mu_inv(gamma) == mu_inv
 
@@ -113,12 +133,7 @@ def gen_convertion_pol_basis(gamma, p, k, E, coef=1):
 def convert_to_polynomial():
     pass
 
-null_base = gen_lattice(gamma, k, p, n,coef=2).LLL()
-print(null_base)
-print("E = ",E)
-print("mod = ",mod)
-r = gen_convertion_pol_basis(gamma, p, k, E, coef=1)
-print("coef = 1 : ", r)
-r = gen_convertion_pol_basis(gamma, p, k, E, coef=2)
-print("coef =2 mod E : ",r%E)
-print("coef = 2 mod mod : ",r%mod)
+print('E = ', E)
+print('rho=', pmns['rho'])
+
+r = gen_convertion_pol_basis(gamma, p, k, E)
