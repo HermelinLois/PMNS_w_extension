@@ -87,10 +87,11 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
 
     parameters_not_found = True
     result = None
+    iteration = 0
     while parameters_not_found:
+        iteration +=1
         # construction of the polynomial pol_e
         pol_e = gen_pol_e(n, lamb)
-        print(pol_e)
         roots = search_roots(p, k, pol_e, K)
 
         if roots:
@@ -102,4 +103,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
             lamb, n = increase_parameters(pol_e, p, k, phi)
 
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k, 'it':iteration}

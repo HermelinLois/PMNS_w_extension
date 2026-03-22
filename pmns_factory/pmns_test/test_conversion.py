@@ -1,4 +1,12 @@
 from sage.all import *
+from pathlib import Path
+import sys
+
+# Allow running this file directly with: sage test_conversion.py
+PMNS_FACTORY_DIR = Path(__file__).resolve().parents[1]
+if str(PMNS_FACTORY_DIR) not in sys.path:
+    sys.path.append(str(PMNS_FACTORY_DIR))
+
 from pmns_core.operations.convertions_gestion import gen_transition_matrix, convert_element_to_polynomial
 from pmns_core.parameters.roots_gestion import *
 from pmns_core.parameters.params_gestion import search_m_and_n
@@ -6,7 +14,7 @@ import pmns_E_type0_optimised as otype0
 import pmns_E_type0 as type0
 
 
-m = 512
+m = 128
 p = random_prime(2**m, lbound=2**(m-1))
 k = 5
 pmns = otype0.gen_parameters(p, k)
@@ -19,20 +27,6 @@ n = E.degree()
 
 PR = PolynomialRing(K,"X")
 Ek = PR(E)
-
-#print(E)
-
-"""rts = select_roots(Ek.roots(), p, k)
-
-for root in rts :
-    if is_root_pow_in_base_field(root, k, p) and is_root_free(root, k, p):
-        rk = root**k
-        #print([Integer(rk**i).nbits() for i in range((n-1)//k + 1)])
-        
-
-M,N = search_m_and_n(k, p, pmns['gamma'], pmns['L'], pmns['E'])
-pmns.update({"M": M, "N": N})"""
-
 
 
 transition_matrix = gen_transition_matrix(gamma, k)
@@ -96,16 +90,15 @@ def gen_lattice(gamma, k, p, n):
 
 def decompose_babai(target, L):
     n = L.nrows()
-    s = vector(target + [0]*(n - len(target)))
+    s = vector([target] + [0]*(n - 1))
     l_inv = L.inverse()
     coefs = vector(map(round, s * l_inv))
-    
-    return [(c,i) for i,c in enumerate(list(s - coefs * L))]
 
+    return list(s - coefs * L)
 
 
 def convert_list_to_pol(coefs, X, k):
-    return sum(c*X**(k*deg) for c, deg in coefs)
+    return sum(c * X**(k * deg) for deg, c in enumerate(coefs))
 
 def gen_convertion_pol_basis(gamma, rho, p, k, E):
     PR = PolynomialRing(ZZ, "X")
@@ -116,23 +109,19 @@ def gen_convertion_pol_basis(gamma, rho, p, k, E):
     mu_inv = Integer(pow(mu,-1, p))
 
     base = gen_lattice(gamma, k, p, n)
-    decomposition = decompose_babai([mu_inv], base)
-    print(decomposition)
-    for i in range(k):
-        decomposition = decompose_babai([c for c,_ in decomposition], base)
-        print(decomposition, convert_list_to_pol(decomposition, X, k)(gamma)==mu_inv)
+    decomposition = decompose_babai(mu_inv, base)
 
-    """pol_mu_inv = convert_list_to_pol(decomposition, X, k)
+    pol_mu_inv = convert_list_to_pol(decomposition, X, k)
 
     assert pol_mu_inv(gamma) == mu_inv
     print(rho)
 
     pol_base = [0] * k
     for deg in range(k):
-        pol_base[deg] = pol_mu_inv**deg % E
+        pol_base[deg] = (pol_mu_inv**deg % E) % p
 
     return pol_base
-"""
+
 def convert_to_polynomial():
     pass
 

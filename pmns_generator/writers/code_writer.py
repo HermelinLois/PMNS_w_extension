@@ -15,9 +15,9 @@ def write_c_code(output_dir, config):
     # acces to templates files to writes specific file
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("general_code_template.j2")
-    
+
     params = {
-        "reduction_file": config['template_file'],
+        "reduction_file": f"reductions_templates/{config['template_file']}",
         "method_name": config['c_method_name']
     }
 

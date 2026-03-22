@@ -60,8 +60,7 @@ def compute_additional_params(method, params:dict) -> None:
         return
 
 
-def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+def write_c_params(env, output_dir:str, method, pmns_params:dict) -> None:
     template = env.get_template("params_c_template.j2")
 
     is_method_montgomery = (method == METHOD_MONTGOMERY)
@@ -75,8 +74,7 @@ def write_c_params(output_dir:str, method, pmns_params:dict) -> None:
     output_path.write_text(rendered_params)
 
 
-def write_txt_params(output_dir:str, params:dict) -> None:
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+def write_txt_params(env, output_dir:str, params:dict) -> None:
     template = env.get_template("params_txt_template.j2")
     
     mod = PR(params['mod'])
@@ -88,5 +86,6 @@ def write_txt_params(output_dir:str, params:dict) -> None:
 
 
 def write_params(output_dir, method, pmns_params):
-    write_txt_params(output_dir, pmns_params)
-    write_c_params(output_dir, method, pmns_params)
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR/"params_templates")))
+    write_txt_params(env, output_dir, pmns_params)
+    write_c_params(env, output_dir, method, pmns_params)

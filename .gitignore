@@ -20,13 +20,6 @@ venv/
 # Generated code
 generated_code/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
 # OS
 .DS_Store
 Thumbs.db

@@ -11,6 +11,7 @@ K ?= 2						# extension degree used
 OPT ?= -O3 -funroll-loops	# compilation option
 ETYPE ?= 0					# type of external polynomial construction used
 METHOD ?= 0					# reduction method used
+GEN_ARGS ?=					# extra args passed to orchestrator.py
 
 # ---- PATH TO TARGETS ----
 C_GEN = pmns_generator/orchestrator.py
@@ -23,7 +24,7 @@ $(TARGET): $(SRC_GEN)
 	@$(CC) $(OPT) $(SRC_GEN) -o $(TARGET)
 
 $(SRC_GEN): $(C_GEN)
-	@$(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) -method $(METHOD) -name $(OUTPUT_DIR)
+	$(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) -method $(METHOD) -name $(OUTPUT_DIR) $(GEN_ARGS)
 
 clean:
 	@rm -rf $(OUTPUT_DIR)
