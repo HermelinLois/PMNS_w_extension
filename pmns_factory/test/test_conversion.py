@@ -14,37 +14,23 @@ import pmns_E_type0_optimised as otype0
 import pmns_E_type0 as type0
 
 
-m = 128
+m = 2048
 p = random_prime(2**m, lbound=2**(m-1))
 k = 3
 pmns = otype0.gen_parameters(p, k)
 
 E = pmns['E']
+
 gamma = pmns['gamma']
 #print("gamma : ", gamma)
 K = gamma.parent()
 n = E.degree()
 
 PR = PolynomialRing(K,"X")
+X = PR.gen()
 Ek = PR(E)
-
+nE = X**9 - X**3 - 8
 transition_matrix = gen_transition_matrix(gamma, k)
-params_head = "<=== PARAMETERS ===>"
-#print(params_head)
-#print("p = ",p)
-#print("k = ", k)
-#print("gamma = ",gamma)
-#print("E = ", E)
-#print("<" + "="*(len(params_head) - 2) + ">\n")
-
-method1_head = "<=== METHOD MATRIX PARAMETERS ===>"
-#print(method1_head)
-#print("transition matrix = ")
-#print(transition_matrix)
-#print("<" + "="*(len(method1_head) - 2) + ">\n")
-
-method2_head = "<=== METHOD INT PMNS PARAMETERS ===>"
-#print(method2_head)
 
 def decompose_centered(target, base, p):
     coeffs = []
@@ -59,8 +45,8 @@ def decompose_centered(target, base, p):
     return coeffs
 
 
-def gen_lattice(gamma, k, p, n,coef=1):
-    nb_coefs = coef * (int(n / k) + 1)
+def gen_lattice(gamma, k, p, n):
+    nb_coefs = n / k
     M = matrix(ZZ, nb_coefs, nb_coefs, 0)
     M[0,0] = p
     
@@ -85,7 +71,7 @@ def decompose_babai(target, L):
 def convert_list_to_pol(coefs, X, k):
     return sum(c * X**(k * deg) for deg, c in enumerate(coefs))
 
-def gen_convertion_pol_basis(gamma, p, k, E):
+def gen_convertion_pol_basis(gamma, p, k, E, L):
     PR = PolynomialRing(ZZ, "X")
     X = PR.gen()
     n = E.degree()
@@ -93,47 +79,17 @@ def gen_convertion_pol_basis(gamma, p, k, E):
     mu = max(vector(ZZ, gamma._vector_()), key=abs)
     mu_inv = Integer(pow(mu,-1, p))
 
-    base1 = gen_lattice(gamma, k, p, n, coef=1)
-    base2 = gen_lattice(gamma, k, p, n, coef=4)
-    
-    c1 = PR(list(base1[1]))
-    c2 = PR(E*X**(1))
-    print(list(c2))
-    
-    print(c1)
-    print(c2)
-    print()
-    
+    base1 = gen_lattice(gamma, k, p, n)
     
     decomposition1 = decompose_babai(mu_inv, base1)
-    decomposition2 = decompose_babai(mu_inv, base2)
-    
     P1 = convert_list_to_pol(decomposition1, X, k)
-    P2 = convert_list_to_pol(decomposition2, X, k) 
-    assert P1(gamma) == mu_inv
-    assert P2(gamma) == mu_inv
-    assert (P2%c2)(gamma == mu_inv)
 
-    nP2 = P2%c2
     print(P1)
-    print(P2)
-    print(nP2)
-    print(ZZ(nP2[n]*gamma**k+ nP2[0]) -p)
-    print(mu_inv)
-    return P1
 
-""" assert pol_mu_inv(gamma) == mu_inv
-
-    pol_base = [0] * k
-    for deg in range(k):
-        pol_base[deg] = (pol_mu_inv**deg % E) % p
-
-    return pol_base
-"""
 def convert_to_polynomial():
     pass
-
+L = pmns['L']
 print('E = ', E)
 print('rho=', pmns['rho'])
 
-r = gen_convertion_pol_basis(gamma, p, k, E)
+r = gen_convertion_pol_basis(gamma, p, k, E, L)
