@@ -80,7 +80,7 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
         f"{'ROUND':^{WRITE_SPACE}}|"
         f"{'NORM':^{WRITE_SPACE}}|"
         f"{GOOD:^{WRITE_SPACE}}|"
-        f"{"ERRORS (CODE|TIME|UNKNOW)":^{2*len(str(ntest)) + 25}}|\n"
+        f"{'ERRORS (CODE|TIME|UNKNOW)':^{2*len(str(ntest)) + 25}}|\n"
     )
     
     break_line = "-"*len(header) + "\n"
@@ -208,7 +208,7 @@ def run_test(k:int, ntest:int, timeout:int, range_test:list):
 if __name__ == "__main__":
     timeout = 60
     ntest = 10
-    range_test = [64]
-    k = 3
+    range_test = [64,128,256]
+    k = 2
     
     run_test(k, ntest, timeout, range_test)

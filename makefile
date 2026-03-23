@@ -2,7 +2,7 @@
 CC = gcc
 PyC = sage
 OUTPUT_DIR = generated_code
-TARGET = pmns
+TARGET = test_reduction
 
 # ---- PARAMETERS ----
 NTEST ?= 100
@@ -34,10 +34,10 @@ show-config:
 	@printf "| %-61s |\n" "CODE GENERATED IN : $(OUTPUT_DIR)"
 	@printf "=================================================================\n"
 
-$(TARGET): show-config $(SRC_GEN)
+$(TARGET): $(SRC_GEN)
 	@$(CC) $(OPT) $(SRC_GEN) -o $(TARGET)
 
-$(SRC_GEN): $(C_GEN)
+$(SRC_GEN): show-config $(C_GEN)
 	@$(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) -method $(METHOD) -name $(OUTPUT_DIR)
 
 clean:
