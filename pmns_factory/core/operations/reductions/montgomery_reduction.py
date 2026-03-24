@@ -38,7 +38,7 @@ def gen_mn_reduction_matrix(M, E, phi: int):
     return mat_m, mat_n
 
 
-def montgomery_reduction(pol_p, M, N, E, gamma, phi:int):
+def montgomery_reduction(pol_p, M, N, E, gamma, phi:int =2**64):
     """
     Reduction of a polynomial with Montgomery reduction
 
@@ -47,7 +47,7 @@ def montgomery_reduction(pol_p, M, N, E, gamma, phi:int):
         M (Polynomial | matrix): element wich represent M such that M(gamma)=0
         N (Polynomial | matrix): element wich represent N = -M^-1
         E (Polynomial): polynomial for external reduction
-        phi (int): represent bit word size use by the architecture
+        phi (int, opt): represent bit word size use by the architecture. usualy a power of 2 and is 2^64 by default
         gamma (extension field element): root of E
 
     Returns:
@@ -56,7 +56,6 @@ def montgomery_reduction(pol_p, M, N, E, gamma, phi:int):
     Q = ((pol_p * N) % E) % phi
     T = (Q * M) % E 
     reduction = (pol_p + T) // phi
-
-    assert reduction(gamma) * phi == pol_p(gamma), "Error occurring during reduction. Please check parameters"
+    assert reduction(gamma) * phi == pol_p(gamma), f"Error occurring during reduction. Please check parameters"
     
     return reduction

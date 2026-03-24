@@ -73,7 +73,7 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
     
     #write file
     writer.write(f"# WITH TIMEOUT = {timeout} AND K = {k}\n")
-       
+
     header = (
         f"|{'BIT_SIZE':^{WRITE_SPACE}}|"
         f"{'TYPE':^{WRITE_SPACE}}|"
@@ -118,7 +118,7 @@ def alarm_handler(null1, null2):
     raise TimeoutError("generation timeout")
 
 
-def run_single_generation(args:list):
+def run_single_generation(args:list)-> dict:
     """
     Run a test generation
     
@@ -129,7 +129,7 @@ def run_single_generation(args:list):
         timeout(int): maximum time execution for generation
         
     Return:
-        void: write summarized pmns generation in a file .txt
+        dict: register pmns data generation
     """
     p, k, pmns_module, timeout = args
     response = {"p": p, "type": pmns_module.__name__}

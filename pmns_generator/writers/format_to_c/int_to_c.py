@@ -9,9 +9,10 @@ def cast_to_c(x:int) -> str:
     return str(x) + suffix
 
 def cast_to_c128(x:int, fname:str) -> str:
+
     hi = x >> 64
     lo = x & (2**64 - 1)
-    return f"{fname}({hi}, {lo}ULL)"
+    return f"{fname}({hi}{'LL' if x<0 else 'ULL'}, {lo}ULL)"
 
 def format_list(l:list) -> str:
     return '{' + ', '.join(map(cast_to_c, l)) + '}'

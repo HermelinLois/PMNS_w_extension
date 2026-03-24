@@ -7,10 +7,10 @@ from pathlib import Path
 import inspect
 
 CURRENT_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = CURRENT_DIR / "templates"
+TEMPLATES_DIR = CURRENT_DIR / "templates/tests_templates"
 
 
-def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict) -> None:
+def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict) -> None:
     # we use montgomery reduction to represent element in PMNS
     k, p, phi_pow = pmns_params['k'], pmns_params['p'], pmns_params['phi_pow']
     gamma = pmns_params['gamma']
@@ -26,9 +26,6 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
 
     K = gamma.parent()
     transition_matrix = gen_transition_matrix(gamma, k)
-
-    # name use to recompose decompose int128 in C
-    fname = "INT128"
     
     # choose element for reduction method
     sig = inspect.signature(reduction_method)
@@ -54,10 +51,36 @@ def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_
         polynomials_reduced.append(R.list())
 
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
-    template = env.get_template("test_template.j2")
+    template = env.get_template("test_reduction_template.j2")
     
-    params = {'n': E.degree(), 'n_test': n_test,'fname': fname, 'polA_str': fint.format_matrix(polynomials_a), 'polB_str': fint.format_matrix(polynomials_b), 'reds_str': fint.format_matrix(polynomials_reduced)}
+    params = {'n': E.degree(), 'n_test': n_test, 'polA_str': fint.format_matrix(polynomials_a), 'polB_str': fint.format_matrix(polynomials_b), 'reds_str': fint.format_matrix(polynomials_reduced)}
     rendered_params = template.render(params)
     
-    output_path = Path(output_dir) / "test.h"
+    output_path = Path(output_dir) / "test_reduction.h"
     output_path.write_text(rendered_params)
+
+
+def write_conversion_test(output_dir:str , n_test:int,  **pmns_params):
+    k, p, = pmns_params['k'], pmns_params['p']
+    gamma = pmns_params['gamma']
+
+    K = gamma.parent()
+    fname = "INT128"
+
+    elements = []
+    for _ in range(n_test):
+        element = [randint(0, p) for _ in range(k)]
+        elements.append(element)
+
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+    template = env.get_template("test_conversion_template.j2")
+    
+    params = {'k': k, 'n_test': n_test,'fname': fname, 'elements_str': fint.format_matrix128(elements, fname=fname)}
+    rendered_params = template.render(params)
+    
+    output_path = Path(output_dir) / "test_conversion.h"
+    output_path.write_text(rendered_params)
+
+def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict):
+    write_reduction_test(output_dir, n_test, reduction_method,  **pmns_params)
+    write_conversion_test(output_dir, n_test,  **pmns_params)
