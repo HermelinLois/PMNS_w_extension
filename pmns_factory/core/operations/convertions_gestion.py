@@ -45,29 +45,31 @@ def convert_element_to_polynomial(element, gamma, transition_matrix: matrix):
     return polynomial_of_element
 
 
-def convert_element_to_pmns_montgomery(element, transition_matrix, **kwargs):
+def convert_element_to_pmns_montgomery(element, transition_matrix, **pmns):
     """
     Convert an extension field element to PMNS using Montgomery reduction.
 
     Args:
         element (extension field element): element to convert
         transition_matrix (matrix):  matrix from canonical to gamma basis
-        kwargs: must include phi_pow, rho, gamma, M, N, E
+        pmns: must include phi_pow, rho, gamma, M, N, E
 
     Returns:
         Polynomial: PMNS representation
     """
-    phi_pow, rho, gamma = kwargs['phi_pow'], kwargs['rho'], kwargs['gamma']
-    M, N, E = kwargs['M'], kwargs['N'], kwargs['E']
+    phi_pow, rho, gamma = pmns['phi_pow'], pmns['rho'], pmns['gamma']
+    M, N, E = pmns['M'], pmns['N'], pmns['E']
+    k = pmns['k']
 
     # retrieve parameters from given elements
     n = E.degree()
     phi = 2**phi_pow
+    nb_iteration = n//k
 
-    alpha = element * phi**n
+    alpha = element * phi**nb_iteration
     V = convert_element_to_polynomial(alpha, gamma, transition_matrix)   
     
-    for i in range(n):
+    for i in range(nb_iteration):
         V = montgomery_reduction(V, M, N, E, gamma, phi)
 
     assert V(gamma) == element, f"polynomial doesn't represent {element=}"

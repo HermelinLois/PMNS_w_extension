@@ -207,8 +207,8 @@ def run_test(k:int, ntest:int, timeout:int, range_test:list):
     
 if __name__ == "__main__":
     timeout = 60
-    ntest = 10
-    range_test = [64,128,256]
+    ntest = 2000
+    range_test = [64, 128, 256, 512]
     k = 2
     
     run_test(k, ntest, timeout, range_test)

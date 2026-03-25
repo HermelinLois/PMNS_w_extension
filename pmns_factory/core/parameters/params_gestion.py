@@ -242,6 +242,9 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: int) -> in
         int: return a degree n minimal for wich we can possibly construct a PMNS
     """
     pbits = p.nbits()
+    # knowing that n must verify that (2rho -1)^n > p^k
+    # n must be at least represent p over log2(phi) register.
+    # So n must be greater that the bit size of p^k, ie, #(p)2 * k 
     n = int(pbits * k / phi_pow) + 1
     phi = 2**phi_pow
 
