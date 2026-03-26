@@ -87,7 +87,7 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
 
     pow2_pmns = []
     for i in range(nb_elements):
-        pow2_i = convert_element_to_pmns_montgomery(K([2**(near_2pow * i)]), transition_matrix, **pmns)
+        pow2_i = convert_element_to_pmns_montgomery(K([2**(near_2pow * i)]), transition_matrix, pmns)
         pow2_pmns.append(pow2_i)
 
     print("m = ", m)
@@ -105,14 +105,11 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
 head = "<====> CLASSICAL CONVERSION <====>"
 print("\n"+head)
 
-# this function as a slowdown of his capacity due to equality check over gamma and check of
+# this function is debuff due to equality check over gamma and check of
 # coefficients under rho
 start = time()
-P = convert_element_to_pmns_montgomery(element, transition_matrix, **pmns)
+P = convert_element_to_pmns_montgomery(element, transition_matrix, pmns)
 stop = time()
-
-assert all(abs(c) < rho for c in P)
-assert P(gamma) == element
 
 print(f"conversion of element is : {P = } ({stop - start})")
 print("=" * len(head))
@@ -135,7 +132,7 @@ def gen_convertion_to_gamma_pols(transition_matrix, pmns, mu):
     phi = 2**pmns['phi_pow']
 
     mu_inv = K(mu)**(-1)
-    pmns_mu_inv = convert_element_to_pmns_montgomery(mu_inv, transition_matrix, **pmns)
+    pmns_mu_inv = convert_element_to_pmns_montgomery(mu_inv, transition_matrix, pmns)
 
     conversion_pols = []
     for i in range(k):

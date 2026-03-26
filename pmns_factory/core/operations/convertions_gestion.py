@@ -45,7 +45,7 @@ def convert_element_to_polynomial(element, gamma, transition_matrix: matrix):
     return polynomial_of_element
 
 
-def convert_element_to_pmns_montgomery(element, transition_matrix, **pmns):
+def convert_element_to_pmns_montgomery(element, transition_matrix, pmns):
     """
     Convert an extension field element to PMNS using Montgomery reduction.
 

@@ -30,7 +30,7 @@ def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -
     
     code_writer.write_c_code(OUTPUT_DIR, config)
     params_writer.write_params(OUTPUT_DIR, method, pmns_params)
-    tests_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  **pmns_params)
+    tests_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  pmns_params)
     
 
 def write_all():

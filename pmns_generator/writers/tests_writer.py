@@ -1,4 +1,4 @@
-from sage.all import randint
+from sage.all import randint, ceil
 from jinja2 import Environment, FileSystemLoader
 from pmns_factory.core.parameters.params_gestion import search_m_and_n
 from pmns_factory.core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
@@ -10,7 +10,7 @@ CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates/tests_templates"
 
 
-def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict) -> None:
+def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable,  pmns_params:dict) -> None:
     # we use montgomery reduction to represent element in PMNS
     k, p, phi_pow = pmns_params['k'], pmns_params['p'], pmns_params['phi_pow']
     gamma = pmns_params['gamma']
@@ -40,8 +40,8 @@ def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable
         A = K([randint(0, p) for _ in range(k)])
         B = K([randint(0, p) for _ in range(k)])
         
-        Pa = convert_element_to_pmns_montgomery(A, transition_matrix, **pmns_params)
-        Pb = convert_element_to_pmns_montgomery(B, transition_matrix, **pmns_params)
+        Pa = convert_element_to_pmns_montgomery(A, transition_matrix, pmns_params)
+        Pb = convert_element_to_pmns_montgomery(B, transition_matrix, pmns_params)
         
         P = (Pa * Pb) % E
         R = reduction_method(P, **usefull_args)
@@ -60,7 +60,7 @@ def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable
     output_path.write_text(rendered_params)
 
 
-def write_conversion_test(output_dir:str , n_test:int,  **pmns_params):
+def write_conversion_test(output_dir:str , n_test:int,  pmns_params):
     k, p, = pmns_params['k'], pmns_params['p']
     gamma = pmns_params['gamma']
 
@@ -75,12 +75,12 @@ def write_conversion_test(output_dir:str , n_test:int,  **pmns_params):
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("test_conversion_template.j2")
     
-    params = {'k': k, 'n_test': n_test,'fname': fname, 'elements_str': fint.format_matrix128(elements, fname=fname)}
+    params = {'k': k, 'n_test': n_test,'fname': fname, 'elements_str': fint.format_matrix128(elements, fname=fname), 'nb_chunks': ceil(p.nbits()/pmns_params['phi_pow'])}
     rendered_params = template.render(params)
     
     output_path = Path(output_dir) / "test_conversion.h"
     output_path.write_text(rendered_params)
 
-def write_test(output_dir:str , n_test:int, reduction_method: callable,  **pmns_params:dict):
-    write_reduction_test(output_dir, n_test, reduction_method,  **pmns_params)
-    write_conversion_test(output_dir, n_test,  **pmns_params)
+def write_test(output_dir:str , n_test:int, reduction_method: callable,  pmns_params:dict):
+    write_reduction_test(output_dir, n_test, reduction_method,  pmns_params)
+    write_conversion_test(output_dir, n_test,  pmns_params)
