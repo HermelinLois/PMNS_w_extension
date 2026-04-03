@@ -9,8 +9,8 @@ if str(PMNS_FACTORY_DIR) not in sys.path:
 
 from core.operations.convertions_gestion import gen_transition_matrix, convert_element_to_polynomial
 from core.parameters.roots_gestion import *
-from core.parameters.params_gestion import search_m_and_n
-from core.operations.reductions.montgomery_reduction import montgomery_reduction
+from core.parameters.params_gestion import search_memory_overhead
+from core.operations.reductions.montgomery_reduction import fast_montgomery_reduction
 from core.operations.convertions_gestion import convert_element_to_pmns_montgomery
 import pmns_E_type0_optimised as otype0
 import pmns_E_type0 as type0
@@ -18,24 +18,25 @@ import pmns_E_type0 as type0
 PR = PolynomialRing(ZZ,"X")
 X = PR.gen()
 
-m = 1024
+m = 128
 p = random_prime(2**m, lbound=2**(m-1))
-k = 2
+k = 3
 pmns = otype0.gen_parameters(p, k)
-
 
 E = pmns['E']
 L = pmns['L']
 gamma = pmns['gamma']
 rho = pmns['rho']
 n = E.degree()
+phi = 2**pmns['phi_pow']
 
 K = gamma.parent()
 delta = gamma**k
+
+print("deltas size = ", [(Integer(delta**i)).nbits() for i in range(n//k)])
 mu = max(vector(ZZ, gamma._vector_()), key=abs)
 
-M, N = search_m_and_n(k, p, gamma, L, E)
-pmns.update({'M': M, 'N': N})
+pmns.update({'L_inv': (-(L.inverse()%phi))})
 
 element = K([randint(0,p-1) for _ in range(k)])
 
@@ -45,6 +46,10 @@ print("gamma = ", gamma)
 print("rho = ", rho)
 print("element = ", element)
 
+w = search_memory_overhead(E)
+print("w = ", w)
+print(f"rho greater than w/(w-1) ? {floor(w/(w-1))} < {rho} < {ceil(w/(w-1))}")
+print("nombre de réduction succesive => ", s:=floor(log((2*rho)**(n//k)/(rho - (rho + 1)/2 * phi/(phi-1)))/log(phi)) +1, "max : ",n ,"target : ", n//k)
 transition_matrix = gen_transition_matrix(pmns['gamma'], k)
 
 # common functions 
@@ -90,10 +95,12 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
         pow2_i = convert_element_to_pmns_montgomery(K([2**(near_2pow * i)]), transition_matrix, pmns)
         pow2_pmns.append(pow2_i)
 
+    s = ceil((m+1)/((t-1) * coef))
     print("m = ", m)
     print("t = ", t)
     print("M = ", augment)
-    print("under rho = ", floor((m+1)/((t-1) * coef)) + 1)
+    print("under rho = ", s)
+    print("no added reduction ? ",s* n//k *((k-1)*w+1), rho, s* n//k *((k-1)*w+1) < rho)
     print("~n = ", n//k)
 
     return {'near_2pow': near_2pow, 'pow2_pmns': pow2_pmns, 'nb_elements': nb_elements}
@@ -126,8 +133,8 @@ def gen_convertion_to_gamma_pols(transition_matrix, pmns, mu):
     p = pmns['p']
     k = pmns['k']
     E = pmns['E']
-    M = pmns['M']
-    N = pmns['N']
+    L = pmns['L']
+    L_inv = pmns['L_inv']
     gamma = pmns['gamma']
     phi = 2**pmns['phi_pow']
 
@@ -137,20 +144,20 @@ def gen_convertion_to_gamma_pols(transition_matrix, pmns, mu):
     conversion_pols = []
     for i in range(k):
         current_pol = pmns_mu_inv**i * X**i * phi % E
-        current_pol = montgomery_reduction(current_pol, M, N, E, gamma)
+        current_pol = fast_montgomery_reduction(current_pol, E, L, L_inv, phi)
         conversion_pols.append(current_pol)
     return conversion_pols
 
 
 def fast_field_conversion_to_pmns(element, params_2pow, conversion_pols, pmns):
     E = pmns['E']
-    M = pmns['M']
-    N = pmns['N']
+    L = pmns['L']
+    L_inv = pmns['L_inv']
     gamma = pmns['gamma']
     rho = pmns['rho']
     phi = 2**pmns['phi_pow']
 
-    nb_internal_reduction = 0 if element.polynomial().degree() <= 0 else 3
+    nb_internal_reduction = 3
     elements = element._vector_() * phi**nb_internal_reduction
 
     P = 0
@@ -158,7 +165,7 @@ def fast_field_conversion_to_pmns(element, params_2pow, conversion_pols, pmns):
         P += fast_int_conversion_to_pmns(elmt, params_2pow) * conversion_pols[idx] % E
 
     for _ in range(nb_internal_reduction):
-        P = montgomery_reduction(P, M, N, E, gamma)
+        P = fast_montgomery_reduction(P, E, L, L_inv, phi)
     return P
 
 
@@ -184,8 +191,8 @@ print("\n"+head)
 
 def fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow):
     E = pmns['E']
-    M = pmns['M']
-    N = pmns['N']
+    L = pmns['L']
+    L_inv = pmns['L_inv']
     rho =pmns['rho']
     gamma = pmns['gamma']
     phi = 2**pmns['phi_pow']
@@ -198,7 +205,7 @@ def fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow)
         P += fast_int_conversion_to_pmns(e, params_2pow) * X**idx % E
     
     for i in range(nb_internal_reduction):
-        P = montgomery_reduction(P, M, N, E, gamma)
+        P = fast_montgomery_reduction(P, E, L, L_inv, phi)
 
     return P
 
@@ -214,3 +221,10 @@ assert P(gamma) == element
 
 print(f"\nconversion of element is : {P = } ({stop - start})")
 print("=" * len(head))
+
+#############################################################################################
+#############################################################################################
+#############################################################################################
+
+head = "<====> FAST CONVERSION <====>"
+print("\n"+head)

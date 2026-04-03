@@ -5,8 +5,8 @@
 # reduction
 # ==================================================
 
-from sage.all import vector, matrix, PolynomialRing, ZZ
-from core.operations.reductions.montgomery_reduction import montgomery_reduction
+from sage.all import vector, matrix, PolynomialRing, ZZ, log
+from core.operations.reductions.montgomery_reduction import fast_montgomery_reduction
 
 PR = PolynomialRing(ZZ, "X")
 
@@ -58,21 +58,22 @@ def convert_element_to_pmns_montgomery(element, transition_matrix, pmns):
         Polynomial: PMNS representation
     """
     phi_pow, rho, gamma = pmns['phi_pow'], pmns['rho'], pmns['gamma']
-    M, N, E = pmns['M'], pmns['N'], pmns['E']
+    E = pmns['E']
+    L, L_inv = pmns['L'], pmns['L_inv']
     k = pmns['k']
 
     # retrieve parameters from given elements
     n = E.degree()
     phi = 2**phi_pow
-    nb_iteration = n//k
+    nb_iteration = int(log((2*rho)**(n//k)/(rho - (rho + 1)/2 * phi/(phi-1)))/log(phi)) + 1
 
     alpha = element * phi**nb_iteration
     V = convert_element_to_polynomial(alpha, gamma, transition_matrix)   
     
     for i in range(nb_iteration):
-        V = montgomery_reduction(V, M, N, E, gamma, phi)
+        V = fast_montgomery_reduction(V, E, L, L_inv, phi)
 
-    assert V(gamma) == element, f"polynomial doesn't represent {element=}"
-    assert all(abs(c) < rho for c in V), f"{rho=} too low for {element=}"
+    assert V(gamma) == element, f"polynomial doesn't represent {element=}\n{V(gamma)}"
+    assert all(abs(c) < rho for c in V), f"{rho=} too low for {element=}\n{V =}"
 
     return V

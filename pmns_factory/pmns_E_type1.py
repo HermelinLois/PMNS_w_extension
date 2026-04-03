@@ -1,4 +1,4 @@
-from sage.all import PolynomialRing, ZZ, ceil, Integer, GF
+from sage.all import PolynomialRing, ZZ, ceil, Integer, GF, matrix
 from core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
 from core.parameters.roots_gestion import is_gamma_feasible, search_roots
 
@@ -20,7 +20,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
 
     E_alpha = gen_pol_e(n, k, n_alpha, beta)
     E_beta = gen_pol_e(n, k, alpha, n_beta)
-    
+
     w_alpha = search_memory_overhead(E_alpha)
     w_beta = search_memory_overhead(E_beta)
 
@@ -33,7 +33,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     
     if test_beta:
         return n_alpha, INIT_BETA, n 
-    
+        
     return alpha, n_beta, n
 
 
@@ -74,4 +74,5 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str ="z") -> dict:
             alpha, beta, n = increase_parameters(pol_e, p, k, phi)
     
     L, rho, gamma = result
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k, 'it':iteration}
+    print(matrix(ZZ, -(L**-1)%phi))
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'L_inv': matrix(ZZ, (-(L.inverse()) % phi)), 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k, 'it':iteration}

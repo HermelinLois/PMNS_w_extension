@@ -4,7 +4,7 @@
 # to a polynomial 
 # ==================================================
 
-from sage.all import matrix, ZZ, PolynomialRing
+from sage.all import matrix, ZZ, PolynomialRing, Integer, vector
 from ...math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
@@ -53,9 +53,27 @@ def montgomery_reduction(pol_p, M, N, E, gamma, phi:int =2**64):
     Returns:
         Polynomial : reduction of pol_p which still represent the same element
     """
+    phi = Integer(phi)
+
     Q = ((pol_p * N) % E) % phi
+    Q = PR([elmt - phi * (elmt>2**(phi.nbits() - 2)) for elmt in Q])
+
     T = (Q * M) % E 
     reduction = (pol_p + T) // phi
+
     assert reduction(gamma) * phi == pol_p(gamma), f"Error occurring during reduction. Please check parameters"
     
     return reduction
+
+
+def fast_montgomery_reduction(pol_p, E, L, L_inv, phi:int = 2**64):
+    n = L.nrows()
+    phi = Integer(phi)
+
+    v_p = vector(ZZ, pol_p.list() + [0] * (n - len(pol_p.list())))
+    q_raw = (v_p * L_inv) % phi
+    q_centered = vector(ZZ, [(c % phi) - (phi if (c % phi) > phi // 2 else 0) for c in q_raw])
+    
+    T = PR((q_centered * L).list())
+        
+    return (pol_p + T)//phi

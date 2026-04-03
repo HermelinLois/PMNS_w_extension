@@ -4,7 +4,7 @@
 # PMNS construction
 # ==================================================
 
-from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp
+from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp, Integer
 from core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
 from core.math_utils import square_and_multiply
 
@@ -83,10 +83,10 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
         base_norm = int(base.norm(1))
 
         # Coefficient bound estimation
-        rho = 2 * w * base_norm
+        rho = Integer(base_norm - 1)
 
         # Ensure coefficients fit machine word
-        if rho < phi:
+        if 2 * w * (rho - 1) < phi:
             return base, rho, gamma
 
     return None
