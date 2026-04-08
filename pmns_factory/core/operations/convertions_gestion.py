@@ -65,7 +65,7 @@ def convert_element_to_pmns_montgomery(element, transition_matrix, pmns):
     # retrieve parameters from given elements
     n = E.degree()
     phi = 2**phi_pow
-    nb_iteration = int(log((2*rho)**(n//k)/(rho - (rho + 1)/2 * phi/(phi-1)))/log(phi)) + 1
+    nb_iteration = n
 
     alpha = element * phi**nb_iteration
     V = convert_element_to_polynomial(alpha, gamma, transition_matrix)   

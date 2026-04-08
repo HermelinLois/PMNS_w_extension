@@ -18,8 +18,8 @@ import pmns_E_type0 as type0
 PR = PolynomialRing(ZZ,"X")
 X = PR.gen()
 
-m = 128
-p = random_prime(2**m, lbound=2**(m-1))
+m = 1024
+p = random_prime(2**m, lbound=2**(m-1)) # Integer(101744864283287535450564907935948129100692627616929520537342055149603313146187) #random_prime(2**m, lbound=2**(m-1))
 k = 3
 pmns = otype0.gen_parameters(p, k)
 
@@ -32,10 +32,6 @@ phi = 2**pmns['phi_pow']
 
 K = gamma.parent()
 delta = gamma**k
-
-print("deltas size = ", [(Integer(delta**i)).nbits() for i in range(n//k)])
-mu = max(vector(ZZ, gamma._vector_()), key=abs)
-
 pmns.update({'L_inv': (-(L.inverse()%phi))})
 
 element = K([randint(0,p-1) for _ in range(k)])
@@ -46,10 +42,6 @@ print("gamma = ", gamma)
 print("rho = ", rho)
 print("element = ", element)
 
-w = search_memory_overhead(E)
-print("w = ", w)
-print(f"rho greater than w/(w-1) ? {floor(w/(w-1))} < {rho} < {ceil(w/(w-1))}")
-print("nombre de réduction succesive => ", s:=floor(log((2*rho)**(n//k)/(rho - (rho + 1)/2 * phi/(phi-1)))/log(phi)) +1, "max : ",n ,"target : ", n//k)
 transition_matrix = gen_transition_matrix(pmns['gamma'], k)
 
 # common functions 
@@ -57,13 +49,13 @@ def convert_to_pol(base:list, nb_coefs:list):
     return sum(c*base[i] for i, c in enumerate(nb_coefs))
 
 
-def fast_int_conversion_to_pmns(element, params_2pow):
-    decomp = fast_decompose_bits(element, params_2pow)
+def int_conversion_to_pmns(element, params_2pow):
+    decomp = decompose_bits(element, params_2pow)
     P = convert_to_pol(params_2pow['pow2_pmns'] , decomp)
     return P
 
 
-def fast_decompose_bits(element, params_2pow):
+def decompose_bits(element, params_2pow):
     pow2_bits = params_2pow['near_2pow']
     nb_elements = params_2pow['nb_elements']
 
@@ -86,8 +78,8 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
     k = pmns['k']
 
     coef = n//k
-    augment = ceil((m+1)/((t-1) * coef))
-    nb_elements = augment * coef
+    zeta = ceil((m+1)/((t-1) * coef))
+    nb_elements = zeta * coef
     near_2pow = ceil((m + 1)/nb_elements)
 
     pow2_pmns = []
@@ -95,15 +87,14 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
         pow2_i = convert_element_to_pmns_montgomery(K([2**(near_2pow * i)]), transition_matrix, pmns)
         pow2_pmns.append(pow2_i)
 
-    s = ceil((m+1)/((t-1) * coef))
-    print("m = ", m)
+    """    print("m = ", m)
     print("t = ", t)
-    print("M = ", augment)
-    print("under rho = ", s)
-    print("no added reduction ? ",s* n//k *((k-1)*w+1), rho, s* n//k *((k-1)*w+1) < rho)
-    print("~n = ", n//k)
+    print("zeta = ", zeta)
+    print("no added reduction ? ", zeta* n//k *((k-1)*w+1), rho, zeta* n//k *((k-1)*w+1) < rho)
+    print("~n = ", n//k)"""
 
     return {'near_2pow': near_2pow, 'pow2_pmns': pow2_pmns, 'nb_elements': nb_elements}
+
 
 #############################################################################################
 #############################################################################################
@@ -112,8 +103,9 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
 head = "<====> CLASSICAL CONVERSION <====>"
 print("\n"+head)
 
-# this function is debuff due to equality check over gamma and check of
+# this function is underperfoming due to equality check over gamma and check of
 # coefficients under rho
+
 start = time()
 P = convert_element_to_pmns_montgomery(element, transition_matrix, pmns)
 stop = time()
@@ -122,58 +114,72 @@ print(f"conversion of element is : {P = } ({stop - start})")
 print("=" * len(head))
 
 
+
+
 #############################################################################################
 #############################################################################################
 #############################################################################################
 
-head = "<====> FIRST CONVERSION (no transp. matrix) <====>"
+head = "<====> PSEUDO-FAST CONVERSION (no transp. matrix) <====>"
 print("\n" + head)
 
-def gen_convertion_to_gamma_pols(transition_matrix, pmns, mu):
-    p = pmns['p']
-    k = pmns['k']
+def gen_convertion_to_gamma_pols(pmns):
     E = pmns['E']
     L = pmns['L']
     L_inv = pmns['L_inv']
     gamma = pmns['gamma']
+    p = pmns['p']
+    k = pmns['k'] 
     phi = 2**pmns['phi_pow']
-
-    mu_inv = K(mu)**(-1)
-    pmns_mu_inv = convert_element_to_pmns_montgomery(mu_inv, transition_matrix, pmns)
-
+    
     conversion_pols = []
+    transition_matrix = gen_transition_matrix(gamma, k)
+    
     for i in range(k):
-        current_pol = pmns_mu_inv**i * X**i * phi % E
-        current_pol = fast_montgomery_reduction(current_pol, E, L, L_inv, phi)
-        conversion_pols.append(current_pol)
+        z_pow_i = K([0]*i + [1])
+        
+        C_i = convert_element_to_pmns_montgomery(z_pow_i, transition_matrix, pmns)
+        conversion_pols.append(C_i)
+    
+    for i, C_i in enumerate(conversion_pols):
+        assert C_i(gamma) == pow(K([0,1]), i, p), f"C_{i}(gamma) = {C_i(gamma)} != z^{i}"
+    
     return conversion_pols
 
-
-def fast_field_conversion_to_pmns(element, params_2pow, conversion_pols, pmns):
+def field_conversion_to_pmns_v1(element, params_2pow, conversion_pols, pmns):
     E = pmns['E']
     L = pmns['L']
     L_inv = pmns['L_inv']
-    gamma = pmns['gamma']
     rho = pmns['rho']
     phi = 2**pmns['phi_pow']
+    n = E.degree()
+    k = pmns['k']
+    w = search_memory_overhead(E)
+    
+    
+    m_plus_1 = pmns['p'].nbits()  
+    t = rho.nbits()
+    zeta = ceil((m_plus_1) / ((t-1) * (n//k)))
+    bound_P = zeta * n * w * rho**3
+    nb_internal_reduction = ceil(log(zeta * n * w * rho**3/(rho - L.norm(1)/2 * phi/(phi-1)), phi))
 
-    nb_internal_reduction = 3
-    elements = element._vector_() * phi**nb_internal_reduction
-
-    P = 0
-    for idx, elmt in enumerate(elements):
-        P += fast_int_conversion_to_pmns(elmt, params_2pow) * conversion_pols[idx] % E
-
+    
+    element = element * phi**nb_internal_reduction
+    P = PR(0)
+    for i, x_i in enumerate(element._vector_()):
+        Qi = int_conversion_to_pmns(x_i, params_2pow)        
+        P += Qi * conversion_pols[i] % E
+    
     for _ in range(nb_internal_reduction):
         P = fast_montgomery_reduction(P, E, L, L_inv, phi)
+    
     return P
 
-
 params_2pow = gen_2pow_parameters(transition_matrix, pmns, p)
-conversion_pols = gen_convertion_to_gamma_pols(transition_matrix, pmns, mu)
+conversion_pols = gen_convertion_to_gamma_pols(pmns)
 
 start = time()
-P = fast_field_conversion_to_pmns(element, params_2pow, conversion_pols, pmns)
+P = field_conversion_to_pmns_v1(element, params_2pow, conversion_pols, pmns)
 stop = time()
 
 assert all(abs(c) < rho for c in P)
@@ -182,14 +188,18 @@ assert P(gamma) == element
 print(f"\nconversion of element is : {P = } ({stop - start})")
 print("=" * len(head))
 
+
+
+
+
 #############################################################################################
 #############################################################################################
 #############################################################################################
 
-head = "<====> SECOND CONVERSION (transp. matrix) <====>"
+head = "<====> PSEUDO-FAST CONVERSION (transp. matrix) <====>"
 print("\n"+head)
 
-def fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow):
+def field_conversion_to_pmns_v2(element, transition_matrix, pmns, params_2pow):
     E = pmns['E']
     L = pmns['L']
     L_inv = pmns['L_inv']
@@ -197,12 +207,17 @@ def fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow)
     gamma = pmns['gamma']
     phi = 2**pmns['phi_pow']
 
-    nb_internal_reduction = 2
+    m_plus_1 = pmns['p'].nbits()  
+    t = rho.nbits()
+    zeta = ceil((m_plus_1) / ((t-1) * (n//k)))
+    w = search_memory_overhead(E)
+
+    nb_internal_reduction = ceil(log(zeta* n//k *((k-1)*w + 1) * rho**2/(rho - L.norm(1)/2 * (phi/(phi-1))), phi))
     element_in_gamma = convert_element_to_polynomial(element * phi**nb_internal_reduction, gamma, transition_matrix)
     
     P = 0
     for idx, e in enumerate(element_in_gamma):
-        P += fast_int_conversion_to_pmns(e, params_2pow) * X**idx % E
+        P += int_conversion_to_pmns(e, params_2pow) * X**idx % E
     
     for i in range(nb_internal_reduction):
         P = fast_montgomery_reduction(P, E, L, L_inv, phi)
@@ -210,10 +225,9 @@ def fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow)
     return P
 
 params_2pow = gen_2pow_parameters(transition_matrix, pmns, p)
-conversion_pols = gen_convertion_to_gamma_pols(transition_matrix, pmns, mu)
 
 start = time()
-P = fast_field_conversion_to_pmns(element, transition_matrix, pmns, params_2pow)
+P = field_conversion_to_pmns_v2(element, transition_matrix, pmns, params_2pow)
 stop = time()
 
 assert all(abs(c) < rho for c in P)
@@ -225,6 +239,148 @@ print("=" * len(head))
 #############################################################################################
 #############################################################################################
 #############################################################################################
-
-head = "<====> FAST CONVERSION <====>"
+head = "<====> FAST CONVERSION (transp. matrix)<====>"
 print("\n"+head)
+
+def decompose_bits(element, nb_elements, near_2pow):
+    current_element = Integer(element)
+    result = []
+    mask = (1 << near_2pow) - 1
+    for _ in range(nb_elements):
+        result.append(current_element & mask)
+        current_element >>= near_2pow
+    return result
+
+def gen_2pow_gamma_i_parameters(transition_matrix, pmns, base_int):
+    m = base_int.nbits()
+    n = pmns['E'].degree()
+    t = pmns['rho'].nbits()
+    k = pmns['k']
+    K = pmns['gamma'].parent()
+    gamma = pmns['gamma']
+
+    coef_div = n // k
+    zeta = ceil((m + 1) / ((t - 1) * coef_div))
+    nb_elements = zeta * coef_div 
+    near_2pow = ceil((m + 1) / nb_elements)
+
+    pow2_pmns_gammas = [[] for _ in range(k)]
+    
+    for j in range(k):
+        gamma_j = gamma**j
+        for i in range(nb_elements):
+            val_to_convert = K(2**(near_2pow * i) * gamma_j)
+            pow2_val = convert_element_to_pmns_montgomery(val_to_convert, transition_matrix, pmns)
+            pow2_pmns_gammas[j].append(pow2_val)
+
+    return {
+        'pow2_pmns': pow2_pmns_gammas, 
+        'nb_elements': nb_elements,
+        'near_2pow': near_2pow
+    }
+
+
+def field_conversion_to_pmns_v3(element, transition_matrix, pmns, params_2pow_gamma_i):
+    E = pmns['E']
+    L = pmns['L']
+    L_inv = pmns['L_inv']
+    gamma = pmns['gamma']
+    phi = 2**pmns['phi_pow']
+    rho = pmns['rho']
+    
+    nb_red = 1 
+    element_in_gamma = convert_element_to_polynomial(element * (phi**nb_red), gamma, transition_matrix)
+    
+    P = PR(0)
+    for idx, e in enumerate(element_in_gamma):
+        decomp = decompose_bits(e, params_2pow_gamma_i['nb_elements'], params_2pow_gamma_i['near_2pow'])
+        table_gamma_idx = params_2pow_gamma_i['pow2_pmns'][idx]
+
+        P += sum(c * table_gamma_idx[i] for i, c in enumerate(decomp))
+
+    return fast_montgomery_reduction(P, E, L, L_inv, phi)
+
+
+
+pow2_pmns_gammas = gen_2pow_gamma_i_parameters(transition_matrix, pmns, p)
+start = time()
+P = field_conversion_to_pmns_v3(element, transition_matrix, pmns, pow2_pmns_gammas)
+stop = time()
+
+assert all(abs(c) < rho for c in P)
+assert P(gamma) == element, f'{P(gamma)} \n{element}'
+
+print(f"\nconversion of element is : {P = } ({stop - start})")
+print("=" * len(head))
+
+head = "<====> FAST CONVERSION (no transp. matrix)<====>"
+print("\n"+head)
+
+def decompose_bits(element, nb_elements, near_2pow):
+    current_element = Integer(element)
+    result = []
+    mask = (1 << near_2pow) - 1
+    for _ in range(nb_elements):
+        result.append(current_element & mask)
+        current_element >>= near_2pow
+    return result
+
+def gen_2pow_gamma_i_parameters(transition_matrix, pmns, base_int):
+    m = base_int.nbits()
+    n = pmns['E'].degree()
+    t = pmns['rho'].nbits()
+    k = pmns['k']
+    K = pmns['gamma'].parent()
+    gamma = pmns['gamma']
+
+    coef_div = n // k
+    zeta = ceil((m + 1) / ((t - 1) * coef_div))
+    nb_elements = zeta * coef_div 
+    near_2pow = ceil((m + 1) / nb_elements)
+
+    pow2_pmns_gammas = [[] for _ in range(k)]
+    
+    for j in range(k):
+        z_j = K([0]*j + [1])
+        for i in range(nb_elements):
+            val_to_convert = K(2**(near_2pow * i) * z_j)
+            pow2_val = convert_element_to_pmns_montgomery(val_to_convert, transition_matrix, pmns)
+            pow2_pmns_gammas[j].append(pow2_val)
+
+    return {
+        'pow2_pmns': pow2_pmns_gammas, 
+        'nb_elements': nb_elements,
+        'near_2pow': near_2pow
+    }
+
+
+def field_conversion_to_pmns_v3(element, transition_matrix, pmns, params_2pow_gamma_i):
+    E = pmns['E']
+    L = pmns['L']
+    L_inv = pmns['L_inv']
+    gamma = pmns['gamma']
+    phi = 2**pmns['phi_pow']
+    element *= phi
+    
+    P = PR(0)
+    for idx, e in enumerate(element._vector_()):
+        decomp = decompose_bits(e, params_2pow_gamma_i['nb_elements'], params_2pow_gamma_i['near_2pow'])
+        table_gamma_idx = params_2pow_gamma_i['pow2_pmns'][idx]
+
+        P += sum(c * table_gamma_idx[i] for i, c in enumerate(decomp))
+
+    return fast_montgomery_reduction(P, E, L, L_inv, phi)
+
+
+
+pow2_pmns_gammas = gen_2pow_gamma_i_parameters(transition_matrix, pmns, p)
+start = time()
+P = field_conversion_to_pmns_v3(element, transition_matrix, pmns, pow2_pmns_gammas)
+stop = time()
+
+assert all(abs(c) < rho for c in P)
+assert P(gamma) == element, f'{P(gamma)} \n{element}'
+
+print(f"\nconversion of element is : {P = } ({stop - start})")
+print("=" * len(head))
+

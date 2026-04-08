@@ -1,5 +1,5 @@
 #define {{method_name}}(RESULT, POLYNOMIAL){\
-    uint64_t Q[DEGREE] = {0};\
+    int64_t Q[DEGREE] = {0};\
     __int128 T[DEGREE] = {0};\
 \
     ext_red_w_matrix(uint64_t, Q, POLYNOMIAL, MAT_N);\
