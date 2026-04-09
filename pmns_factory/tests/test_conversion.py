@@ -200,7 +200,7 @@ head = "<====> PSEUDO-FAST CONVERSION (transp. matrix) <====>"
 print("\n"+head)
 
 def field_conversion_to_pmns_v2(element, transition_matrix, pmns, params_2pow):
-    E = pmns['E']random_prime(2**m, lbound=2**(m-1)) # 
+    E = pmns['E']
     L = pmns['L']
     L_inv = pmns['L_inv']
     rho =pmns['rho']
