@@ -18,9 +18,9 @@ import pmns_E_type0 as type0
 PR = PolynomialRing(ZZ,"X")
 X = PR.gen()
 
-m = 1024
-p = random_prime(2**m, lbound=2**(m-1)) # Integer(101744864283287535450564907935948129100692627616929520537342055149603313146187) #random_prime(2**m, lbound=2**(m-1))
-k = 3
+m = None
+p = Integer(101744864283287535450564907935948129100692627616929520537342055149603313146187) #random_prime(2**m, lbound=2**(m-1))
+k = 13
 pmns = otype0.gen_parameters(p, k)
 
 E = pmns['E']
@@ -104,7 +104,7 @@ head = "<====> CLASSICAL CONVERSION <====>"
 print("\n"+head)
 
 # this function is underperfoming due to equality check over gamma and check of
-# coefficients under rho
+# coefficients under rhorandom_prime(2**m, lbound=2**(m-1)) # 
 
 start = time()
 P = convert_element_to_pmns_montgomery(element, transition_matrix, pmns)
@@ -200,7 +200,7 @@ head = "<====> PSEUDO-FAST CONVERSION (transp. matrix) <====>"
 print("\n"+head)
 
 def field_conversion_to_pmns_v2(element, transition_matrix, pmns, params_2pow):
-    E = pmns['E']
+    E = pmns['E']random_prime(2**m, lbound=2**(m-1)) # 
     L = pmns['L']
     L_inv = pmns['L_inv']
     rho =pmns['rho']
@@ -315,15 +315,6 @@ print("=" * len(head))
 
 head = "<====> FAST CONVERSION (no transp. matrix)<====>"
 print("\n"+head)
-
-def decompose_bits(element, nb_elements, near_2pow):
-    current_element = Integer(element)
-    result = []
-    mask = (1 << near_2pow) - 1
-    for _ in range(nb_elements):
-        result.append(current_element & mask)
-        current_element >>= near_2pow
-    return result
 
 def gen_2pow_gamma_i_parameters(transition_matrix, pmns, base_int):
     m = base_int.nbits()

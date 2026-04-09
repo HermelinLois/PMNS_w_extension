@@ -226,7 +226,7 @@ def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=2**64):
 
 
 
-def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: int) -> int:
+def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) -> int:
     """
     Function that compute a minimal value of n such that we can possibly construct a PMNS
 
@@ -258,7 +258,7 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: int) -> in
     #   > (max_add_coef*(n - 1) + 1) represent the value of overleaping coefficient after an external reduction 
     #       of the product of two theoretical PMNS polynomial
     
-    while round(2**(k * pbits / n) * ceil(n / exp(1)) * 2 * (max_add_coef * (n - 1) + 1)) >= phi:
+    while round(2**(k * pbits / n) * ceil(n / exp(1)) * 2 * (max_add_coef(n) * (n - 1) + 1)) >= phi:
         n += 1
         
     return n

@@ -66,9 +66,8 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     Returns:
         int: degree from wich we can possibly construct a PMNS
     """
-    # initialy, max add coef is lamb for external reduction
-    # so we serach a minimal n with this lamb
-    max_add_coef = INIT_LAMB
+
+    max_add_coef = lambda n : search_memory_overhead( gen_pol_e(n, INIT_LAMB) )
     n = SMD(p, k, phi_pow, max_add_coef)
     
     # as we search root of polynomial pol_e in extension field, wich ar e intergers of power k, 
