@@ -27,7 +27,6 @@ def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -
     config = REDUCTION_CONFIG[method]
     
     pmns_params = PMNS.gen_parameters(p, k)
-    
     code_writer.write_c_code(OUTPUT_DIR, config)
     params_writer.write_params(OUTPUT_DIR, method, pmns_params)
     tests_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  pmns_params)

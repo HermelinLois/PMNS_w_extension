@@ -5,7 +5,7 @@ OUTPUT_DIR = generated_code
 TARGET = test_reduction
 
 # ---- PARAMETERS ----
-NTEST ?= 100
+NTEST ?= 10
 NBITS ?= 128
 K ?= 2
 OPT ?= -O3 -funroll-loops

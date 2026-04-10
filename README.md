@@ -18,3 +18,4 @@ And we try an optimised research of parameters using specific irreducible modulu
 ## Dependencies
 - SageMath (for the Python implementation)
 - Jinja2 (for c code writing)
+- GCC (for c compilation)

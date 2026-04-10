@@ -249,16 +249,9 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) 
     phi = 2**phi_pow
 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
-    # here :
-    #   > p**(k/n) is due to Minkowski theorem saying that element are upper bound by p^(k/n)
-    #       to avoid problem with high bit prime, we use an approximation of p by a power of 2
-    #   > ceil(n / exp(1)) is due to stirling solving approximation of the hyperspheric condition 
-    #       over the volume of the lattice (V.Pascale, N.Méloni, F.Palma)
-    #   > factor 2 is due to Babai rounding: even with error, factor 2 allows stability for Babai algorithm
-    #   > (max_add_coef*(n - 1) + 1) represent the value of overleaping coefficient after an external reduction 
-    #       of the product of two theoretical PMNS polynomial
+    # here we approximate a value of the laticce G such that rho >= ||G||-1
     
-    while round(2**(k * pbits / n) * ceil(n / exp(1)) * 2 * (max_add_coef(n) * (n - 1) + 1)) >= phi:
+    while round( 2 * max_add_coef(n) * (2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
         n += 1
         
     return n

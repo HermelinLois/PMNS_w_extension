@@ -40,8 +40,8 @@ def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable
     polynomials_b = []
     polynomials_reduced = []
     for _ in range(n_test):
-        A = K([randint(0, p) for _ in range(k)])
-        B = K([randint(0, p) for _ in range(k)])
+        A = K.random_element()
+        B = K.random_element()
         
         Pa = convert_element_to_pmns_montgomery(A, transition_matrix, pmns_params)
         Pb = convert_element_to_pmns_montgomery(B, transition_matrix, pmns_params)
