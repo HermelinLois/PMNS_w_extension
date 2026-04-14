@@ -113,24 +113,15 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
     # here we approximate a value of the laticce G such that rho >= ||G||-1
     n = int(pbits * k / phi_pow) + 1
-    while round( 2 * max_add_coef(n) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
+    while round(2 * max_add_coef(n) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
         n += 1
-
-    """nopt = int(pbits * k / phi_pow) + 1
+    print("sub lattice construction : ", n)
+    
+    nopt = int(pbits * k / phi_pow) + 1
     while round( 2 * max_add_coef(nopt) * (2**(k * pbits / nopt) * ceil(nopt / exp(1)) - 2)) >= phi:
         nopt += 1
     print("minimal sub general search : ",nopt)
-
-    nopt = int(pbits * k / phi_pow) + 1
-    while round( 2 * max_add_coef(nopt) * (1/2 * 2**(k * pbits / nopt) * ceil(nopt / exp(1)) * nopt - 2)) >= phi:
-        nopt += 1
-    print("uper bound search : ",nopt)
-
-    nopt = int(pbits * k / phi_pow) + 1
-    while round(2 * max_add_coef(nopt) * (2**(k*pbits/nopt) / exp(1) - 2)) >= phi:
-        nopt += 1
-    print("minimal construction : ",nopt)"""
-    
+        
     return n
 
 

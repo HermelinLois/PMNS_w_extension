@@ -7,7 +7,7 @@ from pathlib import Path
 import inspect
 
 CURRENT_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = CURRENT_DIR / "templates/tests_templates"
+TEMPLATES_DIR = CURRENT_DIR / "templates" / "test_values_templates"
 
 
 def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable,  pmns_params:dict) -> None:

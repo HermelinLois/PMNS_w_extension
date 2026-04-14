@@ -4,7 +4,7 @@
 # and in txt format
 # ==================================
 
-from sage.all import PolynomialRing, ZZ, matrix
+from sage.all import matrix
 from jinja2 import Environment, FileSystemLoader
 from .format_to_c.int_to_c import format_matrix
 from pathlib import Path
@@ -19,8 +19,6 @@ if ROOT_PATH not in sys.path:
     
 from config import METHOD_MONTGOMERY, METHOD_BABAI
 from pmns_factory.core.parameters.matrix_gestion import gen_overflow_matrix
-
-PR = PolynomialRing(ZZ,"X")
 
 def compute_additional_params(method, params:dict) -> None:
     E = params['E']
@@ -74,18 +72,6 @@ def write_c_params(env, output_dir:str, method, pmns_params:dict) -> None:
     output_path.write_text(rendered_params)
 
 
-def write_txt_params(env, output_dir:str, params:dict) -> None:
-    template = env.get_template("params_txt_template.j2")
-    
-    mod = PR(params['mod'])
-    params['mod'] = mod
-    rendered_params = template.render(params)
-    
-    output_path = Path(output_dir) / "pmns_parameters.txt"
-    output_path.write_text(rendered_params)
-
-
 def write_params(output_dir, method, pmns_params):
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR/"params_templates")))
-    write_txt_params(env, output_dir, pmns_params)
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR / "add_parameters_templates")))
     write_c_params(env, output_dir, method, pmns_params)
