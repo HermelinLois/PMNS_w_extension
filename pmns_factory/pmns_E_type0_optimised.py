@@ -1,6 +1,8 @@
+# ==================================================
 # Objectif is to construct E = X^n - lambda
-# with fast serach of root by constructing a 
+# with fast search of root by constructing a 
 # specific structure of the extension field
+# ==================================================
 
 from sage.all import PolynomialRing, ZZ, vector, ceil, Integer, GF, random_prime, factor, randint, gcd, matrix
 from core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
@@ -30,6 +32,7 @@ def construct_irreducible_polynomial(k, p, phi_pow):
     for q in primes_k:
         if (p - 1) % q != 0:
             return None
+
     # search any element wich isn't a q power of k where q is all prime factor of k
     # generators of Z/pZ are elements wich satisfy those condition 
     exponents = [(p - 1) // q for q in primes_k]
@@ -50,7 +53,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     # (J. Robert, P. Véron, F. Dosso, 2022)
     w = search_memory_overhead(E)
     if 2 * w * p**(k/n) >= phi:
-        return INIT_LAMB, n + k
+        return INIT_LAMB, n + 1
     return n_lamb, n
 
 
@@ -62,15 +65,13 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     
     # as we search root of polynomial pol_e in extension field, wich ar e intergers of power k, 
     # we have to let the degree n be a multiple of k
-    return int(k * ceil(n/k))
+    return n
 
 
 def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:    
     # first condition ensure there existe element in space suitable for our PMNS
     # second permit to know if we can construct irreducible polynomial
-    assert is_gamma_feasible(p, k), "no gamma satisfy the construction"
     assert gcd(k, p-1) > 1, "impossible to construct an irreducible polynomial over Z/pZ"
-    assert k > 1, f"extension degree must be at least 2, here {k=}"
 
     p = Integer(p)
     assert p.nbits() >= phi_pow, f"construction only works if the number of bits in prime (here {p=}) is greater or equal to {phi_pow=}"

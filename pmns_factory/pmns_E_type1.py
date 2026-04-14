@@ -29,7 +29,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     test_beta = (2 * w_beta * p_pow_kn >= phi)
 
     if test_alpha and test_beta:
-        return INIT_ALPHA, INIT_BETA, n + k
+        return INIT_ALPHA, INIT_BETA, n + 1
     
     if test_beta:
         return n_alpha, INIT_BETA, n 
@@ -41,13 +41,10 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     max_add_coef = lambda n : search_memory_overhead( gen_pol_e(n, k, INIT_ALPHA, INIT_BETA) )
     n = SMD(p, k, phi_pow, max_add_coef)
 
-    return int(k * ceil(n/k))
+    return n
 
 
 def gen_parameters(p:int, k:int, phi_pow:int=64, name:str ="z") -> dict:
-    assert is_gamma_feasible(p, k), "no gamma satisfy the construction"
-    assert k > 1, f"extension degree must be at least 2, here {k=}"
-
     p = Integer(p)
     assert p.nbits() >= phi_pow, f"construction only works if the number of bits in prime (here {p=}) is greater or equal to {phi_pow=}"
 
@@ -74,5 +71,4 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str ="z") -> dict:
             alpha, beta, n = increase_parameters(pol_e, p, k, phi)
     
     L, rho, gamma = result
-    print(matrix(ZZ, -(L**-1)%phi))
-    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'L_inv': matrix(ZZ, (-(L.inverse()) % phi)), 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k, 'it':iteration}
+    return {'rho': rho, 'gamma': gamma, 'phi_pow': phi_pow, 'L': L, 'E': pol_e, 'mod': cast_polynomial_to_minimal_representation(K.modulus(), p), 'p': p, 'k':k, 'it':iteration}

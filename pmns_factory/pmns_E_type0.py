@@ -50,7 +50,7 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
     # (J. Robert, P. Véron, F. Dosso, 2022)
     w = search_memory_overhead(E)
     if 2 * w * p**(k/n) >= phi:
-        return INIT_LAMB, n + k
+        return INIT_LAMB, n + 1
     return n_lamb, n
 
 
@@ -72,7 +72,7 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
     
     # as we search root of polynomial pol_e in extension field, wich ar e intergers of power k, 
     # we have to let the degree n be a multiple of k
-    return int(k * ceil(n/k))
+    return n
 
 
 def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
@@ -94,8 +94,6 @@ def gen_parameters(p:int, k:int, phi_pow:int=64, name:str="z") -> dict:
         E (Polynomial): external reduction polynomial use by the PMNS
         mod (Polynomial): Polynomial used to construct the extension field
     """
-    assert is_gamma_feasible(p, k), "no gamma satisfy the construction"
-    assert k > 1, f"extension degree must be at least 2, here {k=}"
 
     p = Integer(p)
     assert p.nbits() >= phi_pow, f"construction only works if the number of bits in prime (here {p=}) is greater or equal to {phi_pow=}"

@@ -71,7 +71,6 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
     """
 
     n = pol_e.degree()
-    
     # coefficient growth factor
     w = search_memory_overhead(pol_e)
 
@@ -80,11 +79,8 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
         base = gen_reduce_null_base(k, p, n, gamma)
 
         # Norm of the base
-        base_norm = int(base.norm(1))
-
-        # Coefficient bound estimation
-        rho = Integer(base_norm - 1)
-
+        rho = Integer(base.norm(1) - 1)
+        
         # Ensure coefficients fit machine word
         if 2 * w * (rho - 1) < phi:
             return base, rho, gamma
@@ -130,27 +126,24 @@ def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
     base = matrix(ZZ, n, n, 0)
     
     # precompute element to fill the matrix
-    gamma_pk = -int((gamma**k))
-    gamma_pk_mod2 = gamma_pk & 1
-    
-    # use the same process as for classical PLNS representation
-    # by manipulating base coefficients and adding odd coefficient if gamma_pk is odd
-    coef = gamma_pk + p * gamma_pk_mod2
+    pol = gamma.minpoly()
+    R = pol.parent()
+    X = R.gen()
 
+    # fill the diagonal
     for i in range(k):
         base[i, i] = p
-
+        
     for i in range(k, n):
-        base[i, i] = 1
-        base[i, i - k] = coef
 
+        vect = (pol * X**(i-k)).list()
+        complete_vect = vect + [0] * (n - len(vect))
+        
+        base[i] = list(map(lambda enum: int(enum[1]) + p * (int(enum[1]) & 1) *(enum[0]!=i), enumerate(complete_vect)))
     reduced_base = base.LLL()
-    
+
     # Note : we evaluate polynomial in an extension field of characteristic p. 
     # therefore, our construction doesn't change the polynomial value when evaluated in the extension field.
-    
-    # Note: This function is a general search for the inverse but can be improved if all coefficients 
-    # are even, by applying the search of the function 'search_m_with_even_deg'
     
     reference_polynomial = PR2(pol_e)
 
@@ -250,11 +243,27 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) 
 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
     # here we approximate a value of the laticce G such that rho >= ||G||-1
-    
-    while round( 2 * max_add_coef(n) * (2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
+    n = int(pbits * k / phi_pow) + 1
+    while round( 2 * max_add_coef(n) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
         n += 1
-        
+
+    """nopt = int(pbits * k / phi_pow) + 1
+    while round( 2 * max_add_coef(nopt) * (2**(k * pbits / nopt) * ceil(nopt / exp(1)) - 2)) >= phi:
+        nopt += 1
+    print("minimal sub general search : ",nopt)
+
+    nopt = int(pbits * k / phi_pow) + 1
+    while round( 2 * max_add_coef(nopt) * (1/2 * 2**(k * pbits / nopt) * ceil(nopt / exp(1)) * nopt - 2)) >= phi:
+        nopt += 1
+    print("uper bound search : ",nopt)
+
+    nopt = int(pbits * k / phi_pow) + 1
+    while round(2 * max_add_coef(nopt) * (2**(k*pbits/nopt) / exp(1) - 2)) >= phi:
+        nopt += 1
+    print("minimal construction : ",nopt)"""
+    
     return n
+
 
 def cast_polynomial_to_minimal_representation(pol, p):
     """

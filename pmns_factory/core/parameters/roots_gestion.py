@@ -102,10 +102,10 @@ def select_roots(roots:list, p:int, k:int):
     
     selected_roots = []
     for root, _ in roots:
-        if not is_root_pow_in_base_field(root, k, p):
-            continue
+
         if not is_root_free(root, k, p):
             continue
+        
         selected_roots.append(root)
 
     return selected_roots
