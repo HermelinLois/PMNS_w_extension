@@ -4,10 +4,125 @@
 # to a polynomial 
 # ==================================================
 
-from sage.all import matrix, ZZ, PolynomialRing, Integer, vector
+from sage.all import matrix, ZZ, PolynomialRing, Integer, vector, GF, gcd, xgcd
 from ...math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
+PR2 = PolynomialRing(GF(2), "X")
+
+
+def search_m_with_even_degs(base, pol_e):
+    """
+    Optimized search for an invertible polynomial modulo pol_e
+    by looking for elements whose degree-0 coefficient is odd.
+
+    Args:
+        base (matrix): matrix of null polynomials evaluated at gamma
+        pol_e (Polynomial): polynomial used for external PMNS reduction
+
+    Returns:
+        Polynomial: polynomial invertible modulo pol_e and null over gamma
+    """
+    for row in base:
+        if row[0] & 1:
+            return PR(list(row)) % pol_e
+    return None
+
+
+def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
+    """
+    General search for an invertible polynomial modulo pol_e.
+
+    Args:
+        k (int): extension degree
+        p (int): prime used to construct the extension field
+        gamma: root of the external reduction polynomial
+        pol_e (Polynomial): external reduction polynomial
+
+    Returns:
+        Polynomial: polynomial invertible modulo pol_e
+    """
+    n = pol_e.degree()
+    base = matrix(ZZ, n, n, 0)
+
+    pol = gamma.minpoly()
+    R = pol.parent()
+    X = R.gen()
+
+    for i in range(k):
+        base[i, i] = p
+
+    for i in range(k, n):
+        vect = (pol * X ** (i - k)).list()
+        complete_vect = vect + [0] * (n - len(vect))
+        base[i] = list(
+            map(
+                lambda enum: int(enum[1]) + p * (int(enum[1]) & 1) * (enum[0] != i),
+                enumerate(complete_vect),
+            )
+        )
+
+    reduced_base = base.LLL()
+    reference_polynomial = PR2(pol_e)
+
+    for linear_combination in range(1, 2 ** n):
+        result = sum(reduced_base[i] for i in range(n) if (linear_combination >> i) & 1)
+        polynomial = PR(list(result)) % pol_e
+        bin_polynomial = PR2(polynomial)
+
+        if bin_polynomial != 1 and gcd(bin_polynomial, reference_polynomial) == 1:
+            return polynomial
+
+    return None
+
+
+def search_polynomial_m(base, k: int, p: int, gamma, pol_e):
+    """
+    Search for an invertible element modulo pol_e with optimization
+    when the coefficients of pol_e are all even in GF(2).
+
+    Args:
+        base (matrix): matrix of null polynomials when evaluated over gamma
+        k (int): extension degree
+        p (int): prime used to construct the extension field
+        gamma: root of the external reduction polynomial
+        pol_e (Polynomial): external reduction polynomial
+
+    Returns:
+        Polynomial: polynomial invertible modulo pol_e
+    """
+    no_optimisation = any(coef & 1 for coef in pol_e)
+    if no_optimisation:
+        return search_m_with_odd_deg(k, p, gamma, pol_e)
+    return search_m_with_even_degs(base, pol_e)
+
+
+def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int = 2 ** 64):
+    """
+    Retrieve M invertible modulo pol_e and N = -M^(-1) mod phi.
+
+    Args:
+        k (int): extension degree
+        p (int): prime used to construct the extension field
+        gamma (extension field element): root of E suitable for PMNS construction
+        base (matrix): reduced base of null polynomial over gamma
+        pol_e (Polynomial): polynomial used for external reduction in PMNS
+        phi (int, Optional): word size bound. Equal to 2**64 by default
+
+    Returns:
+        Polynomial: M, a polynomial null over gamma and invertible modulo pol_e
+        Polynomial: N, a polynomial such that N = -M^(-1) mod phi
+    """
+    M = search_polynomial_m(base, k, p, gamma, pol_e)
+
+    assert M(gamma) == 0, "problem occuring with the base. Polynomial M isn't inverssible"
+
+    d, u, _ = xgcd(M, pol_e)
+    d = int(d)
+    d_inv = pow(d, -1, phi)
+    N = PR((-d_inv * u) % phi)
+
+    return M, N
 
 def gen_mn_reduction_matrix(M, E, phi: int):
     """

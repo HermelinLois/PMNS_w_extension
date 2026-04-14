@@ -4,12 +4,11 @@
 # PMNS construction
 # ==================================================
 
-from sage.all import vector, infinity, ZZ, matrix, GF, gcd, PolynomialRing, xgcd, ceil, exp, Integer
+from sage.all import vector, infinity, ZZ, PolynomialRing, ceil, exp, Integer
 from core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
-from core.math_utils import square_and_multiply
+from core.operations.reductions.montgomery_reduction import search_m_with_even_degs, search_m_with_odd_deg, search_polynomial_m, search_m_and_n
 
 PR = PolynomialRing(ZZ, "X")
-PR2 = PolynomialRing(GF(2), "X")
 
 def search_memory_overhead(pol_e) -> int:
     """
@@ -86,136 +85,6 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
             return base, rho, gamma
 
     return None
-
-
-
-def search_m_with_even_degs(base, pol_e):
-    """
-    Optimized search for an invertible polynomial modulo pol_e
-    by looking for elements whose degree-0 coefficient is odd.
-
-    Args:
-        base (matrix): matrix of null polynomials evaluated at gamma
-        pol_e (Polynomial): polynomial used for external PMNS reduction
-
-    Returns:
-        Polynomial: polynomial invertible modulo pol_e and null over gamma
-    """
-    
-    # loop over rows to find a polynomial with odd constant term
-    for row in base:
-        if row[0] & 1:  # check if constant term is odd
-            return PR(list(row)) % pol_e
-    return None
-
-
-def search_m_with_odd_deg(k: int, p: int, gamma, pol_e):
-    """
-    General search for an invertible polynomial modulo pol_e.
-
-    Args:
-        k (int): extension degree
-        p (int): prime used to construct the extension field
-        gamma: root of the external reduction polynomial
-        pol_e (Polynomial): external reduction polynomial
-
-    Returns:
-        Polynomial: polynomial invertible modulo pol_e
-    """
-    n = pol_e.degree()
-    base = matrix(ZZ, n, n, 0)
-    
-    # precompute element to fill the matrix
-    pol = gamma.minpoly()
-    R = pol.parent()
-    X = R.gen()
-
-    # fill the diagonal
-    for i in range(k):
-        base[i, i] = p
-        
-    for i in range(k, n):
-
-        vect = (pol * X**(i-k)).list()
-        complete_vect = vect + [0] * (n - len(vect))
-        
-        base[i] = list(map(lambda enum: int(enum[1]) + p * (int(enum[1]) & 1) *(enum[0]!=i), enumerate(complete_vect)))
-    reduced_base = base.LLL()
-
-    # Note : we evaluate polynomial in an extension field of characteristic p. 
-    # therefore, our construction doesn't change the polynomial value when evaluated in the extension field.
-    
-    reference_polynomial = PR2(pol_e)
-
-    # search for a linear combination that is invertible mod pol_e
-    for linear_combination in range(1, 2**n):
-        # do polynomial combination using bit representation
-        result = sum(reduced_base[i] for i in range(n) if (linear_combination >> i) & 1)
-        
-        # create the polynomial and cast it to GF(2)
-        polynomial = PR(list(result)) % pol_e
-        bin_polynomial = PR2(polynomial)
-
-        # check that the polynomial is invertible and not a constant polynomial
-        if bin_polynomial != 1 and gcd(bin_polynomial, reference_polynomial) == 1:
-            return polynomial
-    return None
-
-
-def search_polynomial_m(base, k:int, p:int, gamma, pol_e):
-    """
-    Function which searches for an invertible element modulo pol_e with optimization
-    if the degree-0 coefficient of pol_e is even.
-
-    Args:
-        base (matrix): matrix of null polynomials when evaluated over gamma
-        k (int): extension degree
-        p (int): prime used to construct the extension field
-        gamma: root of the external reduction polynomial
-        pol_e (Polynomial): external reduction polynomial
-        
-    Returns:
-        Polynomial: polynomial invertible modulo pol_e
-    """
-    no_optimisation = any(coef&1 for coef in pol_e)
-    if no_optimisation:
-        return search_m_with_odd_deg(k, p, gamma, pol_e)
-    return search_m_with_even_degs(base, pol_e)
-
-
-def search_m_and_n(k: int, p: int, gamma, base, pol_e, phi: int=2**64):
-    """
-    Function that retrieves a polynomial M invertible modulo pol_e and N = -M^(-1) mod phi.
-
-    Args:
-        k (int): extension degree
-        p (int): prime used to construct the extension field
-        gamma (extension field element): root of E suitable for PMNS construction
-        base (matrix): reduced base of null polynomial over gamma
-        phi (int, Optional): word size bound. Equal to 2**64 by default
-        pol_e (Polynomial): polynomial used for external reduction in PMNS
-
-    Returns:
-        Polynomial: M, a polynomial null over gamma and invertible modulo pol_e
-        Polynomial: N, a polynomial such that N = -M^(-1) mod phi
-    """
-    # retrieve an invertible polynomial M modulo pol_e
-    M = search_polynomial_m(base, k, p, gamma, pol_e)
-    
-    assert M(gamma) == 0, "problem occuring with the base. Polynomial M isn't inverssible"
-
-    # with xgcd, we get d, u, v such that M*u + pol_e*v = d
-    # modulo pol_e, we have M^(-1) = u * d^(-1)
-    d, u, _ = xgcd(M, pol_e)
-
-    # ensure d is integer and invertible modulo phi
-    d = int(d)
-    d_inv = pow(d, -1, phi)
-
-    # compute -M^(-1) modulo phi
-    N = PR((-d_inv*u) % phi)
-
-    return M, N
 
 
 

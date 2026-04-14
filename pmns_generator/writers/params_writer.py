@@ -35,7 +35,7 @@ def compute_additional_params(method, params:dict) -> None:
 
     if method == METHOD_MONTGOMERY:
         from pmns_factory.core.operations.reductions.montgomery_reduction import gen_mn_reduction_matrix
-        from pmns_factory.core.parameters.params_gestion import search_m_and_n
+        from pmns_factory.core.operations.reductions.montgomery_reduction import search_m_and_n
         
         phi = 2**phi_pow
         k = params['k']

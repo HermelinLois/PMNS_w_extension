@@ -1,6 +1,6 @@
 from sage.all import randint, ceil
 from jinja2 import Environment, FileSystemLoader
-from pmns_factory.core.parameters.params_gestion import search_m_and_n
+from pmns_factory.core.operations.reductions.montgomery_reduction import search_m_and_n
 from pmns_factory.core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
 import pmns_generator.writers.format_to_c.int_to_c as fint
 from pathlib import Path
