@@ -24,8 +24,6 @@ def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable
 
     # new elements generation to allow pmns_params representation using Montgomery
     constructed_parameters = pmns_params.keys()
-    if 'L_inv' not in constructed_parameters:
-        pmns_params.update({'L_inv': - L**(-1)%phi})
 
     if 'M' not in constructed_parameters or 'N' not in constructed_parameters:
         M, N = search_m_and_n(k, p, gamma, L, E, phi)
