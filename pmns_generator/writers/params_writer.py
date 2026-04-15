@@ -59,6 +59,10 @@ def compute_additional_params(method, params:dict) -> None:
 
 
 def write_c_params(env, output_dir:str, method, pmns_params:dict) -> None:
+    # Create add_parameters subdirectory
+    params_dir = Path(output_dir) / "add_parameters"
+    params_dir.mkdir(exist_ok=True)
+    
     template = env.get_template("params_c_template.j2")
 
     is_method_montgomery = (method == METHOD_MONTGOMERY)
@@ -68,7 +72,7 @@ def write_c_params(env, output_dir:str, method, pmns_params:dict) -> None:
     
     rendered_params = template.render(used_params)
     
-    output_path = Path(output_dir) / "param.h"
+    output_path = params_dir / "general_param.h"
     output_path.write_text(rendered_params)
 
 

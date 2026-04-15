@@ -18,7 +18,7 @@ venv/
 .Python
 
 # Generated code
-generated_code/
+generated_pmns/
 
 # OS
 .DS_Store

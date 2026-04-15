@@ -11,6 +11,10 @@ TEMPLATES_DIR = CURRENT_DIR / "templates" / "test_values_templates"
 
 
 def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable,  pmns_params:dict) -> None:
+    # Create test_values subdirectory
+    test_dir = Path(output_dir) / "test_values"
+    test_dir.mkdir(exist_ok=True)
+    
     # we use montgomery reduction to represent element in pmns_params
     k, p, phi_pow = pmns_params['k'], pmns_params['p'], pmns_params['phi_pow']
     gamma = pmns_params['gamma']
@@ -59,11 +63,15 @@ def write_reduction_test(output_dir:str , n_test:int, reduction_method: callable
     params = {'n': E.degree(), 'n_test': n_test, 'polA_str': fint.format_matrix(polynomials_a), 'polB_str': fint.format_matrix(polynomials_b), 'reds_str': fint.format_matrix(polynomials_reduced)}
     rendered_params = template.render(params)
     
-    output_path = Path(output_dir) / "test_reduction.h"
+    output_path = test_dir / "test_reduction.h"
     output_path.write_text(rendered_params)
 
 
 def write_conversion_test(output_dir:str , n_test:int,  pmns_params:dict):
+    # Create test_values subdirectory
+    test_dir = Path(output_dir) / "test_values"
+    test_dir.mkdir(exist_ok=True)
+    
     k, p, = pmns_params['k'], pmns_params['p']
     gamma = pmns_params['gamma']
     n = pmns_params['E'].degree()
@@ -97,7 +105,7 @@ def write_conversion_test(output_dir:str , n_test:int,  pmns_params:dict):
     params = {'decompose_p': fint.format_element_to_BigInt(p, nb_chunks),'k': k, 'n_test': n_test, 'elements_str': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': nb_red, 'phi_pow': pmns_params['phi_pow'], "transposition_matrix": fint.format_matrix_BigInt(gen_transition_matrix(pmns_params['gamma'], pmns_params['k']), nb_chunks)}
     
     rendered_params = template.render(params)
-    output_path = Path(output_dir) / "test_conversion.h"
+    output_path = test_dir / "test_conversion.h"
     output_path.write_text(rendered_params)
 
 def write_test(output_dir:str , n_test:int, reduction_method: callable,  pmns_params:dict):

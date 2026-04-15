@@ -1,7 +1,7 @@
 # ---- STATIC PARAMETERS ----
 CC = gcc
 PyC = sage
-OUTPUT_DIR = generated_code
+OUTPUT_DIR = generated_pmns
 TARGET = test_reduction
 
 # ---- PARAMETERS ----
@@ -14,7 +14,7 @@ METHOD ?= 0
 
 # ---- PATH TO TARGETS ----
 C_GEN = pmns_generator/orchestrator.py
-SRC_GEN = $(OUTPUT_DIR)/reduction.c
+SRC_GEN = $(OUTPUT_DIR)/code/reduction.c
 
 # ---- RULES ----
 all: $(TARGET)

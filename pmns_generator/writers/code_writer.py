@@ -10,6 +10,9 @@ CURRENT_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = CURRENT_DIR / "templates" / "code_templates"
 
 def write_c_code(output_dir, config):
+    # Create code subdirectory
+    code_dir = Path(output_dir) / "code"
+    code_dir.mkdir(exist_ok=True)
     
     # acces to templates files to writes specific file
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
@@ -22,5 +25,5 @@ def write_c_code(output_dir, config):
 
     rendered_code = template.render(params)
     
-    output_path = Path(output_dir) / "reduction.c"
+    output_path = code_dir / "reduction.c"
     output_path.write_text(rendered_code)
