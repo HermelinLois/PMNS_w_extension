@@ -38,8 +38,8 @@ def increase_parameters(pol_e, p:int, k:int, phi:int) -> tuple:
 
 
 def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
-    max_add_coef = lambda n : search_memory_overhead( gen_pol_e(n, k, INIT_ALPHA, INIT_BETA) )
-    n = SMD(p, k, phi_pow, max_add_coef)
+    init_polynomial = lambda n : gen_pol_e(n, k, INIT_ALPHA, INIT_BETA)
+    n = SMD(p, k, phi_pow, init_polynomial)
 
     return n
 

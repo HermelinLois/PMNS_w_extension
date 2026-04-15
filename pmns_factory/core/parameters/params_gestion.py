@@ -88,7 +88,7 @@ def search_base_rho_and_gamma(roots: list, k: int, p: int, phi: int, pol_e):
 
 
 
-def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) -> int:
+def search_minimal_degree(p: int, k: int, phi_pow: int, init_polynomial: callable) -> int:
     """
     Function that compute a minimal value of n such that we can possibly construct a PMNS
 
@@ -96,9 +96,8 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) 
         p (Interger): prime used to construction extension field
         k (int): extension degree
         phi_pow (int): word size
-        max_add_coef (int): minimal value add to coefficient after internal reduction with initial parameters
-        
-        exemple : E = X^n - alpha X^k - beta => max_add_coef can be approximate by  beta + alpha(alpha + beta)
+        init_polynomial (callable): accepts only polynomial degree and return polynomial with initial 
+            coeffients parameters given to construct polynomial
 
     Returns:
         int: return a degree n minimal for wich we can possibly construct a PMNS
@@ -113,15 +112,21 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, max_add_coef: callable) 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
     # here we approximate a value of the laticce G such that rho >= ||G||-1
     n = int(pbits * k / phi_pow) + 1
-    while round(2 * max_add_coef(n) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
+    while round(2 * search_memory_overhead(init_polynomial(n)) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
         n += 1
-    print("sub lattice construction : ", n)
+    print("minimal sub lattice search : ", n)
+    
+
+
+    nopt = int(pbits * k / phi_pow) + 1
+    while round( 2 * search_memory_overhead(init_polynomial(nopt)) * (max(gen_overflow_matrix(init_polynomial(nopt))._list())/2 * 2**(k * pbits / nopt) * ceil(nopt / exp(1)) - 2)) >= phi:
+        nopt += 1
+    print("general sub lattice search : ",nopt)
     
     nopt = int(pbits * k / phi_pow) + 1
-    while round( 2 * max_add_coef(nopt) * (2**(k * pbits / nopt) * ceil(nopt / exp(1)) - 2)) >= phi:
+    while 2 * search_memory_overhead(init_polynomial(nopt)) * ceil(2**(k * pbits / nopt) / exp(1) - 2) >= phi:
         nopt += 1
-    print("minimal sub general search : ",nopt)
-        
+    print("minimal existence search : ",nopt)
     return n
 
 

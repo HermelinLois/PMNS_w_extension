@@ -63,5 +63,4 @@ def gen_overflow_matrix(pol_e):
         # Pad coefficients to length n
         coeffs = list(poly_mod) + [0] * (n - poly_mod.degree()-1)
         matrix_coefficients.append(coeffs)
-    
     return matrix(ZZ, matrix_coefficients)

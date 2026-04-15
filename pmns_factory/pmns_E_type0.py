@@ -67,8 +67,8 @@ def search_minimal_degree(p: int, k: int, phi_pow: int) -> int:
         int: degree from wich we can possibly construct a PMNS
     """
 
-    max_add_coef = lambda n : search_memory_overhead( gen_pol_e(n, INIT_LAMB) )
-    n = SMD(p, k, phi_pow, max_add_coef)
+    init_polynomial = lambda n : gen_pol_e(n, INIT_LAMB)
+    n = SMD(p, k, phi_pow, init_polynomial)
     
     # as we search root of polynomial pol_e in extension field, wich ar e intergers of power k, 
     # we have to let the degree n be a multiple of k
