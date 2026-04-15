@@ -90,7 +90,7 @@ def write_conversion_test(output_dir:str , n_test:int,  pmns_params:dict):
     template = env.get_template("test_conversion_template.j2")
 
     nb_chunks = ceil(p.nbits()/pmns_params['phi_pow'])
-    params = {'decompose_p': fint.format_element_to_BigInt(p, nb_chunks),'k': k, 'n_test': n_test, 'elements_str': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': pmns_params['E'].degree()//pmns_params['k'], 'phi_pow': pmns_params['phi_pow'], "transposition_matrix": fint.format_matrix_BigInt(gen_transition_matrix(pmns_params['gamma'], pmns_params['k']), nb_chunks)}
+    params = {'decompose_p': fint.format_element_to_BigInt(p, nb_chunks),'k': k, 'n_test': n_test, 'elements_str': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': pmns_params['E'].degree()//pmns_params['k'], 'phi_pow': pmns_params['phi_pow'], "transition_matrix": fint.format_matrix_BigInt(gen_transition_matrix(pmns_params['gamma'], pmns_params['k']), nb_chunks)}
     
     rendered_params = template.render(params)
     output_path = test_dir / "test_conversion.h"

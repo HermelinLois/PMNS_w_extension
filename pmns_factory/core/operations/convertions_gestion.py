@@ -12,14 +12,14 @@ PR = PolynomialRing(ZZ, "X")
 
 def gen_transition_matrix(gamma, k: int) -> matrix:
     """
-    Generate transposition matrix to express elements in gamma basis
+    Generate transition matrix to express elements in gamma basis
 
     Args:
         gamma (extension field element): root of the external reduction
         k (int): degree of the extension
 
     Returns:
-        matrix: transposition matrix from canonical basis to gamma basis
+        matrix: transition matrix from canonical basis to gamma basis
     """
     mat = matrix([(gamma**i)._vector_() for i in range(k)])
     return matrix(ZZ, mat.inverse())
