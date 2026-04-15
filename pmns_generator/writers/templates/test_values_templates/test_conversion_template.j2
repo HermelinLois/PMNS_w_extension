@@ -3,10 +3,20 @@
 #define N_TEST {{n_test}}
 #define EXTENSION_DEGREE {{k}}
 
-#define {{fname}}(hi, low) (((unsigned __int128)(hi) << 64) | (unsigned __int128)(low))
+#define PHI_POW {{phi_pow}}
+#define NB_CHUNKS {{nb_chunks}}
+#define NB_INTERN_RED_CALSSICAL {{nb_intern_red_calssical}}
 
-struct MegaBigInt{
-    uin64_t limbs[{{nb_chunks}}];
-}
+typedef struct {
+    uint64_t limbs[NB_CHUNKS];
+} BigInt;
 
-static unsigned __int128 EXTENSION_FIELD_ELEMENTS [N_TEST][EXTENSION_DEGREE] = {{elements_str}}
+static BigInt P = {{decompose_p}};
+
+static BigInt EXTENSION_FIELD_ELEMENTS [N_TEST][EXTENSION_DEGREE] = {
+    {{elements_str}}
+};
+
+static BigInt TRANSPOSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE]= {
+    {{transposition_matrix}}
+};

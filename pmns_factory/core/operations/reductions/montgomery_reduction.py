@@ -187,7 +187,7 @@ def fast_montgomery_reduction(pol_p, E, L, L_inv, phi:int = 2**64):
 
     v_p = vector(ZZ, pol_p.list() + [0] * (n - len(pol_p.list())))
     q_raw = (v_p * L_inv) % phi
-    q_centered = vector(ZZ, [(c % phi) - (phi if (c % phi) > phi // 2 else 0) for c in q_raw])
+    q_centered = vector(ZZ, [c - phi *(c > phi // 2) for c in q_raw])
     
     T = PR((q_centered * L).list())
         

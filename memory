@@ -1,0 +1,167 @@
+#include <gmp.h>
+#include <stdio.h>
+#include "param.h"
+#include "test_conversion.h"
+
+
+#define vector_matrix_prod(RESULT, VECTOR, MATRIX, USED_DEGREE){\
+    mpz_t coeffs[USED_DEGREE];\
+    mpz_t temp_prod;\
+\
+    mpz_init(temp_prod);\
+    for (int i=0; i<USED_DEGREE; i++){\
+        mpz_init(coeffs[i]);\
+    }\
+\
+    for (int i=0; i<USED_DEGREE; i++){\
+        mpz_set_ui(coeffs[i], 0);\
+        for (int j=0; j<USED_DEGREE; j++){\
+            mpz_mul(temp_prod, VECTOR[i], MATRIX[i][j]);\
+            mpz_add(coeffs[i], coeffs[i], temp_prod);\
+        }\
+    }\
+\
+    for (int i=0; i<USED_DEGREE; i++){\
+        mpz_set(RESULT[i], coeffs[i]);\
+        mpz_clear(coeffs[i]);\
+    }\
+    mpz_clear(temp_prod);\
+}
+
+
+#define montgomery_reduction(POLYNOMIAL){\
+    mpz_t Q[DEGREE];\
+    mpz_t T[DEGREE];\
+\
+    mpz_init(Q);\
+    mpz_init(T);\
+\
+    for (int i=0; i<DEGREE; i++){\
+        mpz_set_ui(Q[i], 0);\
+        mpz_set_ui(T[i], 0);\
+    }\
+\
+    for (int j=0; j<DEGREE; j++){\
+        uint64_t sum = 0;\
+        for (int i=0; i<DEGREE; i++){\
+            sum += mpz_get_ui(POLYNOMIAL[i]) * MAT_N[i][j];\
+        }\
+\
+        if (sum > INT64_MAX) {\
+            mpz_set_ui(Q[j], (uint64_t)(- sum));\
+            mpz_neg(Q[j], Q[j]);\
+        } else {\
+            mpz_set_ui(Q[j], sum);\
+        }\
+    }\
+\
+    vector_matrix_prod(T, Q, MAT_M, DEGREE);\
+    for (int deg=0; deg<DEGREE; deg++){\
+        mpz_add(POLYNOMIAL[deg], POLYNOMIAL[deg], T[deg]);\
+        mpz_fdiv_q_2exp(POLYNOMIAL[deg], POLYNOMIAL[deg], PHI_POW);\
+    }\
+\
+    for (int i=0; i<DEGREE; i++){\
+        mpz_clear(Q[i]);\
+        mpz_clear(T[i]);\
+    }\
+}
+
+
+#define convert_element_to_pmns_classical(POLYNOMIAL, ELEMENT, PRIME){\
+    uint64_t shift = 64 * NB_INTERN_RED_CALSSICAL;\
+\
+    for (int deg=0; deg<EXTENSION_DEGREE; deg++){\
+        mpz_mul_2exp(ELEMENT[deg], ELEMENT[deg], shift);\
+        mpz_mod(ELEMENT[deg], ELEMENT[deg], PRIME);\
+    }\
+\
+    vector_matrix_prod(ELEMENT, ELEMENT, TRANSPOSITION_MATRIX, EXTENSION_DEGREE)\
+    for (int i=0; i<EXTENSION_DEGREE; i++)\
+        mpz_mod(ELEMENT[i], ELEMENT[i], PRIME);\
+\
+    for (int deg=0; deg<DEGREE; deg++){\
+        mpz_set(POLYNOMIAL[deg], (deg<EXTENSION_DEGREE)? ELEMENT[deg] : 0);\
+    }\
+\
+    for (int i=0; i<NB_INTERN_RED_CALSSICAL; i++){\
+        montgomery_reduction(POLYNOMIAL);\
+    }\
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void init_extension_field_element(mpz_t *extension_element, BigInt *decomposed_element){
+    for (int deg=0; deg<EXTENSION_DEGREE; deg++){
+        mpz_init(extension_element[deg]);
+        mpz_import(extension_element[deg], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, decomposed_element[deg].limbs);
+    }
+}
+
+
+void clear_extension_field_element(mpz_t *extension_element){
+    for (int i = 0; i < EXTENSION_DEGREE; i++) {
+        mpz_clear(extension_element[i]);
+    }
+}
+
+
+void init_variables(mpz_t prime, mpz_t *polynomial) {
+    mpz_init(prime);
+    mpz_import(prime, NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, P.limbs);
+
+    for (int deg=0; deg<DEGREE; deg++)
+        mpz_init(polynomial[deg]);
+}
+
+
+void clear_variables(mpz_t prime, mpz_t *polynomial) {
+    mpz_clear(prime);
+    for (int deg=0; deg<DEGREE; deg++)
+        mpz_clear(polynomial[deg]);
+}
+
+
+int main() {
+    mpz_t prime;
+    mpz_t extension_element[EXTENSION_DEGREE];
+    mpz_t polynomial[DEGREE];
+
+    
+    init_variables(prime, polynomial);
+
+    for (int idx=0; idx<N_TEST; idx++){
+        init_extension_field_element(extension_element, EXTENSION_FIELD_ELEMENTS[idx]);
+        convert_element_to_pmns_classical(polynomial, extension_element, prime);
+    }
+    clear_variables(prime, polynomial);
+    clear_extension_field_element(extension_element);
+}
+
+/*
+void print_extension_field_element(mpz_t *extension_element){
+    printf("ELEMENT : {");
+    for (int i = 0; i < EXTENSION_DEGREE; i++) {
+        gmp_printf("%Zd%s", extension_element[i], (i < EXTENSION_DEGREE - 1) ? ", " : "");
+    }
+    printf("}\n");
+}
+*/
