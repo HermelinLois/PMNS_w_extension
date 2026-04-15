@@ -11,12 +11,7 @@ typedef struct {
     uint64_t limbs[NB_CHUNKS];
 } BigInt;
 
-static BigInt P = {{decompose_p}};
 
 static BigInt EXTENSION_FIELD_ELEMENTS [N_TEST][EXTENSION_DEGREE] = {
-    {{elements_str}}
-};
-
-static BigInt TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE]= {
-    {{transition_matrix}}
+    {{elements_decompose}}
 };

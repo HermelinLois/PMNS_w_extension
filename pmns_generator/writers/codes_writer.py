@@ -1,5 +1,5 @@
 # ==================================
-# code_writer.py
+# codes_writer.py
 # Function to write C reduction code 
 # ==================================
 
@@ -32,9 +32,11 @@ def write_reduction_code(output_dir, config):
 
 
 def write_conversion_code(output_dir, pmns_params):
+    # Create code subdirectory
     code_dir = Path(output_dir) / "code"
     code_dir.mkdir(exist_ok=True)
 
+    # Access template used to generate conversion test program
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("conversion_templates/conversion..j2")
 

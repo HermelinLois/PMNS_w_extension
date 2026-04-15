@@ -1,22 +1,92 @@
 #include <gmp.h>
 #include <stdio.h>
-#include "general_param.h"
-#include "test_conversion.h"
+#include "../add_parameters/general_param.h"
+#include "../test_values/test_conversion.h"
 
 
-#define vector_matrix_prod(RESULT, VECTOR, MATRIX, USED_DEGREE){\
+static BigInt P = {{p_decompose}};
+
+static BigInt TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE] ={
+    {{transition_matrix_decompose}}
+};
+
+
+
+void load_parameters(mpz_t prime, mpz_t transition_matrix[EXTENSION_DEGREE][EXTENSION_DEGREE]){
+    mpz_init(prime);
+    mpz_import(prime, NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, P.limbs);
+
+    for (int i=0; i<EXTENSION_DEGREE; i++)
+        for (int j=0; j<EXTENSION_DEGREE; j++){
+            mpz_init(transition_matrix[i][j]);
+            mpz_import(transition_matrix[i][j], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, TRANSITION_MATRIX[i][j].limbs);
+        }
+}
+
+
+void init_extension_field_element(mpz_t *extension_element){
+    for (int deg=0; deg<EXTENSION_DEGREE; deg++){
+        mpz_init(extension_element[deg]);
+    }
+}
+
+void set_extension_field_element(mpz_t *extension_element, BigInt *decomposed_element){
+    for (int deg=0; deg<EXTENSION_DEGREE; deg++){
+        mpz_import(extension_element[deg], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, decomposed_element[deg].limbs);
+    }
+}
+
+
+void clear_parameters(mpz_t prime, mpz_t transition_matrix[EXTENSION_DEGREE][EXTENSION_DEGREE]){
+    mpz_clear(prime);
+
+    for (int i=0; i<EXTENSION_DEGREE; i++)
+        for (int j=0; j<EXTENSION_DEGREE; j++)
+            mpz_clear(transition_matrix[i][j]);
+}
+
+
+void clear_extension_field_element(mpz_t extension_element[EXTENSION_DEGREE]){
+    for (int i = 0; i < EXTENSION_DEGREE; i++)
+        mpz_clear(extension_element[i]);
+}
+
+
+
+
+
+
+
+
+
+#define vector_matrix_prod_BigInt(RESULT, VECTOR, MATRIX, USED_DEGREE){\
+    mpz_t coeffs[USED_DEGREE];\
+\
+    for (int i=0; i<USED_DEGREE; i++){\
+        mpz_init(coeffs[i]);\
+        mpz_set_ui(coeffs[i], 0);\
+        for (int j=0; j<USED_DEGREE; j++){\
+            mpz_addmul(coeffs[i], VECTOR[j], MATRIX[j][i]);\
+        }\
+    }\
+\
+    for (int i=0; i<USED_DEGREE; i++){\
+        mpz_set(RESULT[i], coeffs[i]);\
+        mpz_clear(coeffs[i]);\
+    }\
+}
+
+
+#define vector_matrix_prod_64bits(RESULT, VECTOR, MATRIX, USED_DEGREE){\
     mpz_t coeffs[USED_DEGREE];\
     mpz_t temp_prod;\
 \
     mpz_init(temp_prod);\
     for (int i=0; i<USED_DEGREE; i++){\
         mpz_init(coeffs[i]);\
-    }\
-\
-    for (int i=0; i<USED_DEGREE; i++){\
         mpz_set_ui(coeffs[i], 0);\
         for (int j=0; j<USED_DEGREE; j++){\
-            mpz_mul(temp_prod, VECTOR[i], MATRIX[i][j]);\
+            mpz_mul_si(temp_prod, VECTOR[i], (long)MATRIX[i][j]);\
             mpz_add(coeffs[i], coeffs[i], temp_prod);\
         }\
     }\
@@ -29,12 +99,20 @@
 }
 
 
+
+
+
+
+
+
 #define montgomery_reduction(POLYNOMIAL){\
     mpz_t Q[DEGREE];\
     mpz_t T[DEGREE];\
 \
-    mpz_init(Q);\
-    mpz_init(T);\
+    for (int deg=0; deg<DEGREE; deg++){\
+        mpz_init(Q[deg]);\
+        mpz_init(T[deg]);\
+    }\
 \
     for (int i=0; i<DEGREE; i++){\
         mpz_set_ui(Q[i], 0);\
@@ -55,7 +133,7 @@
         }\
     }\
 \
-    vector_matrix_prod(T, Q, MAT_M, DEGREE);\
+    vector_matrix_prod_64bits(T, Q, MAT_M, DEGREE);\
     for (int deg=0; deg<DEGREE; deg++){\
         mpz_add(POLYNOMIAL[deg], POLYNOMIAL[deg], T[deg]);\
         mpz_fdiv_q_2exp(POLYNOMIAL[deg], POLYNOMIAL[deg], PHI_POW);\
@@ -68,7 +146,21 @@
 }
 
 
-#define convert_element_to_pmns_classical(POLYNOMIAL, ELEMENT, PRIME){\
+
+
+#define complete_polynomial(POLYNOMIAL, ELEMENT_IN_GAMMA){\
+    for (int deg = 0; deg < EXTENSION_DEGREE; deg++)\
+        mpz_set(POLYNOMIAL[deg], ELEMENT_IN_GAMMA[deg]);\
+\
+    for (int deg = EXTENSION_DEGREE; deg < DEGREE; deg++)\
+        mpz_set_ui(POLYNOMIAL[deg], 0);\
+}
+
+
+
+
+#define convert_element_to_pmns_classical(POLYNOMIAL, ELEMENT, PRIME, TRANSITION_MATRIX){\
+    mpz_t temp_polynomial[DEGREE];\
     uint64_t shift = 64 * NB_INTERN_RED_CALSSICAL;\
 \
     for (int deg=0; deg<EXTENSION_DEGREE; deg++){\
@@ -76,16 +168,21 @@
         mpz_mod(ELEMENT[deg], ELEMENT[deg], PRIME);\
     }\
 \
-    vector_matrix_prod(ELEMENT, ELEMENT, TRANSITION_MATRIX, EXTENSION_DEGREE)\
+    vector_matrix_prod_BigInt(ELEMENT, ELEMENT, TRANSITION_MATRIX, EXTENSION_DEGREE);\
     for (int i=0; i<EXTENSION_DEGREE; i++)\
         mpz_mod(ELEMENT[i], ELEMENT[i], PRIME);\
 \
-    for (int deg=0; deg<DEGREE; deg++){\
-        mpz_set(POLYNOMIAL[deg], (deg<EXTENSION_DEGREE)? ELEMENT[deg] : 0);\
-    }\
+    for (int i = 0; i < DEGREE; i++)\
+        mpz_init(temp_polynomial[i]);\
+    complete_polynomial(temp_polynomial, ELEMENT);\
 \
     for (int i=0; i<NB_INTERN_RED_CALSSICAL; i++){\
-        montgomery_reduction(POLYNOMIAL);\
+        montgomery_reduction(temp_polynomial);\
+    }\
+\
+    for (int i=0; i<DEGREE; i++){\
+        POLYNOMIAL[i] = mpz_get_si(temp_polynomial[i]);\
+        mpz_clear(temp_polynomial[i]);\
     }\
 }
 
@@ -107,54 +204,74 @@
 
 
 
-
-
-void init_extension_field_element(mpz_t *extension_element, BigInt *decomposed_element){
-    for (int deg=0; deg<EXTENSION_DEGREE; deg++){
-        mpz_init(extension_element[deg]);
-        mpz_import(extension_element[deg], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, decomposed_element[deg].limbs);
-    }
-}
-
-
-void clear_extension_field_element(mpz_t *extension_element){
+void print_extension_field_element(mpz_t extension_element[EXTENSION_DEGREE]){
+    printf("ELEMENT : {");
     for (int i = 0; i < EXTENSION_DEGREE; i++) {
-        mpz_clear(extension_element[i]);
+        gmp_printf("%Zd%s", extension_element[i], (i < EXTENSION_DEGREE - 1) ? ", " : "");
     }
+    printf("}\n");
 }
 
-
-void init_variables(mpz_t prime, mpz_t *polynomial) {
-    mpz_init(prime);
-    mpz_import(prime, NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, P.limbs);
-
-    for (int deg=0; deg<DEGREE; deg++)
-        mpz_init(polynomial[deg]);
+void print_polynomial(int64_t polynomial[DEGREE]){
+    printf("POLYNOMIAL : [");
+    for (int i = 0; i < DEGREE; i++) {
+        printf("%lld%s", (long long) polynomial[i], (i < DEGREE - 1) ? ", " : "");
+    }
+    printf("]\n");
 }
-
-
-void clear_variables(mpz_t prime, mpz_t *polynomial) {
-    mpz_clear(prime);
-    for (int deg=0; deg<DEGREE; deg++)
-        mpz_clear(polynomial[deg]);
-}
-
 
 int main() {
     mpz_t prime;
+    mpz_t transition_matrix[EXTENSION_DEGREE][EXTENSION_DEGREE];
     mpz_t extension_element[EXTENSION_DEGREE];
-    mpz_t polynomial[DEGREE];
+    int64_t polynomial[DEGREE];
 
-    
-    init_variables(prime, polynomial);
+        
+    load_parameters(prime, transition_matrix);
+    init_extension_field_element(extension_element);
 
-    for (int idx=0; idx<N_TEST; idx++){
-        init_extension_field_element(extension_element, EXTENSION_FIELD_ELEMENTS[idx]);
-        convert_element_to_pmns_classical(polynomial, extension_element, prime);
+    for (int test=0; test<N_TEST; test++){
+        set_extension_field_element(extension_element, EXTENSION_FIELD_ELEMENTS[test]);
+        print_extension_field_element(extension_element);
+        convert_element_to_pmns_classical(polynomial, extension_element, prime, transition_matrix);
+        print_polynomial(polynomial);
     }
-    clear_variables(prime, polynomial);
+
     clear_extension_field_element(extension_element);
+    clear_parameters(prime, transition_matrix);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 void print_extension_field_element(mpz_t *extension_element){

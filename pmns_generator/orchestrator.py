@@ -1,5 +1,4 @@
-from writers import code_writer, params_writer, tests_writer
-from sage.all import random_prime, PolynomialRing, ZZ
+from sage.all import random_prime
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 import sys
@@ -13,6 +12,7 @@ ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
 
+from writers import codes_writer, params_writer, tests_writer
 from config import PMNS_CONFIG, REDUCTION_CONFIG
 
 def write_pmns_config(output_dir: Path, pmns_params: dict) -> None:
@@ -40,9 +40,11 @@ def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -
     
     pmns_params = PMNS.gen_parameters(p, k)
     write_pmns_config(OUTPUT_DIR, pmns_params)
-    code_writer.write_c_code(OUTPUT_DIR, config)
+    
+    codes_writer.write_c_code(OUTPUT_DIR, config, pmns_params)
     params_writer.write_params(OUTPUT_DIR, method, pmns_params)
     tests_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  pmns_params)
+    
     
 
 def write_all():
