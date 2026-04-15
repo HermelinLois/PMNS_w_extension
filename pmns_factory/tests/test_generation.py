@@ -11,7 +11,7 @@ if str(PMNS_FACTORY_DIR) not in sys.path:
 
 import pmns_E_type0 as type0
 import pmns_E_type1 as type1
-import pmns_E_type0_optimised as otype0
+import pmns_E_type0_specific as stype0
 
 
 GOOD = 'GOOD'
@@ -32,8 +32,8 @@ CATEGORIES = [STATUS, NORM, ERROR_TIME, ERROR_CODE, ROUND, ERROR_UNKNOW]
 
 TYPE0 = type0.__name__
 TYPE1 = type1.__name__
-OTYPE0 = otype0.__name__
-TYPES = [type0, type1, otype0]
+STYPE0 = stype0.__name__
+TYPES = [type0, type1, stype0]
 
 
 def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, range_test:list):
@@ -55,7 +55,7 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
     datas_register = {
         TYPE0:[[0]*n for _ in range(len(range_test))],
         TYPE1:[[0]*n for _ in range(len(range_test))],
-        OTYPE0:[[0]*n for _ in range(len(range_test))]
+        STYPE0:[[0]*n for _ in range(len(range_test))]
     }
 
     # write specific data in registers

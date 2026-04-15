@@ -12,8 +12,7 @@ from core.parameters.roots_gestion import *
 from core.parameters.params_gestion import search_memory_overhead
 from core.operations.reductions.montgomery_reduction import fast_montgomery_reduction
 from core.operations.convertions_gestion import convert_element_to_pmns_montgomery
-import pmns_E_type0_optimised as otype0
-import pmns_E_type0 as type0
+import pmns_E_type0_specific as otype0
 
 PR = PolynomialRing(ZZ,"X")
 X = PR.gen()
@@ -21,7 +20,7 @@ X = PR.gen()
 m = None
 p = Integer(101744864283287535450564907935948129100692627616929520537342055149603313146187) #random_prime(2**m, lbound=2**(m-1))
 k = 13
-pmns = otype0.gen_parameters(p, k)
+pmns = stype0.gen_parameters(p, k)
 
 E = pmns['E']
 L = pmns['L']

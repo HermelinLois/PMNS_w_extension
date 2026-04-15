@@ -4,13 +4,9 @@
 # specific structure of the extension field
 # ==================================================
 
-from sage.all import PolynomialRing, ZZ, vector, ceil, Integer, GF, random_prime, factor, randint, gcd, matrix
+from sage.all import PolynomialRing, ZZ, Integer, GF, random_prime, factor, randint, gcd, matrix
 from core.parameters.params_gestion import search_minimal_degree as SMD, search_base_rho_and_gamma, search_memory_overhead, cast_polynomial_to_minimal_representation
 from core.parameters.roots_gestion import is_gamma_feasible, search_roots
-
-# Cantor-Zassenhaus
-# Berlekamp
-# those algorithms can be used to assertthat polynomials are irreducible
 
 PR = PolynomialRing(ZZ, "X")
 X = PR.gen()

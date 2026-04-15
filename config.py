@@ -13,7 +13,7 @@ from pmns_factory.core.operations.reductions.montgomery_reduction import montgom
 from pmns_factory.core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
 import pmns_factory.pmns_E_type0 as type0
 import pmns_factory.pmns_E_type1 as type1
-import pmns_factory.pmns_E_type0_optimised as opType0
+import pmns_factory.pmns_E_type0_specific as stype0
 
 # method available
 METHOD_MONTGOMERY = 0
@@ -43,5 +43,5 @@ E_TYPE2 = 2
 PMNS_CONFIG = {
     E_TYPE0 : type0,
     E_TYPE1 : type1,
-    E_TYPE2 : opType0,
+    E_TYPE2 : stype0,
 }
