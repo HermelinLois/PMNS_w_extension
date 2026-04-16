@@ -1,0 +1,55 @@
+#include <gmp.h>
+#include <stdio.h>
+#include "../add_parameters/general_param.h"
+#include "../test_values/test_conversion.h"
+
+static const mp_limb_t P[NB_CHUNKS] = {4447634635591002531ULL, 18152133456427927961ULL, 15452689068804757998ULL, 11023743767915843796ULL, 13402533785519023286ULL, 18154006914173044349ULL, 6629518884792049241ULL, 15309276654326993922ULL};
+static mp_limb_t TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE] ={
+    {
+        {{1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL}}
+    }
+};
+
+void load_extension_field_element(mp_limb_t extension_element[EXTENSION_DEGREE][NB_CHUNKS], mp_limb_t element_data[EXTENSION_DEGREE][NB_CHUNKS]) {
+    for (int deg = 0; deg < EXTENSION_DEGREE; deg++)
+        mpn_copyi(extension_element[deg], element_data[deg], NB_CHUNKS);
+}
+
+
+
+
+#define convert_element_to_pmns_classical(POLYNOMIAL, ELEMENT, PRIME, TRANSITION_MATRIX){\
+    mpz_t temp_polynomial[DEGREE];\
+    uint64_t shift = 64 * NB_INTERN_RED_CALSSICAL;\
+\
+    for (int deg=0; deg<EXTENSION_DEGREE; deg++){\
+        mpz_mul_2exp(ELEMENT[deg], ELEMENT[deg], shift);\
+        mpz_mod(ELEMENT[deg], ELEMENT[deg], PRIME);\
+    }\
+\
+    vector_matrix_prod_BigInt(ELEMENT, ELEMENT, TRANSITION_MATRIX, EXTENSION_DEGREE);\
+    for (int i=0; i<EXTENSION_DEGREE; i++)\
+        mpz_fdiv_r(ELEMENT[i], ELEMENT[i], PRIME);\
+\
+    for (int i = 0; i < DEGREE; i++)\
+        mpz_init(temp_polynomial[i]);\
+\
+    complete_polynomial(temp_polynomial, ELEMENT);\
+\
+    for (int i=0; i<NB_INTERN_RED_CALSSICAL; i++){\
+        montgomery_reduction(temp_polynomial);\
+    }\
+\
+    for (int i=0; i<DEGREE; i++){\
+        POLYNOMIAL[i] = mpz_get_si(temp_polynomial[i]);\
+        mpz_clear(temp_polynomial[i]);\
+    }\
+}
+
+
+int main() {
+    mp_limb_t extension_element[EXTENSION_DEGREE][NB_CHUNKS];
+    load_extension_field_element(extension_element, EXTENSION_FIELD_ELEMENTS[0]);
+
+    return 0;
+}
