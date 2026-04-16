@@ -17,9 +17,6 @@ venv/
 *.so
 .Python
 
-# Generated code
-generated_pmns/
-
 # OS
 .DS_Store
 Thumbs.db
@@ -28,4 +25,5 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Pytest
-.pytest_cache/
+.pytest_cache
+

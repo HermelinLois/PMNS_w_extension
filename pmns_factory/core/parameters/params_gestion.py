@@ -110,20 +110,10 @@ def search_minimal_degree(p: int, k: int, phi_pow: int, init_polynomial: callabl
     phi = 2**phi_pow
 
     # compute minimal degree n wich can lead to a possible contruction of PMNS
-    # here we approximate a value of the laticce G such that rho >= ||G||-1
-    """n = int(pbits * k / phi_pow) + 1
-    while round(2 * search_memory_overhead(init_polynomial(n)) * (1/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
-        n += 1
-    print("minimal sub lattice search : ", n)"""
-    
+    # here we approximate a value of the laticce G such that rho >= ||G||-1    
     n = int(pbits * k / phi_pow) + 1
     while round( 2 * search_memory_overhead(init_polynomial(n)) * (max(gen_overflow_matrix(init_polynomial(n))._list())/2 * 2**(k * pbits / n) * ceil(n / exp(1)) - 2)) >= phi:
         n += 1
-    
-    """nopt = int(pbits * k / phi_pow) + 1
-    while 2 * search_memory_overhead(init_polynomial(nopt)) * ceil(2**(k * pbits / nopt) / exp(1) - 2) >= phi:
-        nopt += 1
-    print("minimal existence search : ",nopt)"""
     return n
 
 
