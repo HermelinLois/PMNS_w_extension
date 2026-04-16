@@ -43,12 +43,12 @@ def write_conversion_code(output_dir, pmns_params):
     p = pmns_params['p']
     k = pmns_params['k']
     phi_pow = pmns_params['phi_pow']
-    nb_chunks = (p.nbits() + phi_pow - 1) // phi_pow
+    nb_limbs = (p.nbits() + phi_pow - 1) // phi_pow
 
     transition_matrix = gen_transition_matrix(pmns_params['gamma'], k)
     params = {
-        'p_decompose': fint.format_element_to_BigInt(p, nb_chunks),
-        'transition_matrix_decompose': fint.format_matrix_BigInt(transition_matrix, nb_chunks)
+        'p_decompose': fint.format_element_to_BigInt(p, nb_limbs),
+        'transition_matrix_decompose': fint.format_matrix_BigInt(transition_matrix, nb_limbs)
     }
 
     rendered_code = template.render(params)

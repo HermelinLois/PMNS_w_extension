@@ -90,8 +90,8 @@ def write_conversion_test(output_dir:str , n_test:int,  pmns_params:dict):
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("test_conversion_template.j2")
 
-    nb_chunks = ceil(p.nbits()/pmns_params['phi_pow'])
-    params = {'k': k, 'n_test': n_test, 'elements_decompose': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': n//k, "phi_pow":pmns_params['phi_pow'], 'rho':rho}
+    nb_limbs = ceil(p.nbits()/pmns_params['phi_pow'])
+    params = {'k': k, 'n_test': n_test, 'elements_decompose': fint.format_matrix_BigInt(elements, nb_limbs), 'nb_limbs': nb_limbs, 'nb_intern_red_calssical': n//k, "phi_pow":pmns_params['phi_pow'], 'rho':rho}
     
     rendered_params = template.render(params)
     output_path = test_dir / "test_conversion.h"

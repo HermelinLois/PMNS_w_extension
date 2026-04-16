@@ -5,11 +5,12 @@
 
 #define PHI_POW {{phi_pow}}
 #define RHO {{rho}}
-#define NB_CHUNKS {{nb_chunks}}
+#define NB_LIMBS {{nb_limbs}}
+#define NB_CHUNKS NB_LIMBS
 #define NB_INTERN_RED_CALSSICAL {{nb_intern_red_calssical}}
 
 typedef struct {
-    uint64_t limbs[NB_CHUNKS];
+    uint64_t limbs[NB_LIMBS];
 } BigInt;
 
 

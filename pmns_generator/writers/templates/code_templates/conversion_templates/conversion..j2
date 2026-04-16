@@ -3,6 +3,18 @@
 #include "../add_parameters/general_param.h"
 #include "../test_values/test_conversion.h"
 
+#ifndef NB_LIMBS
+#ifdef NB_CHUNKS
+#define NB_LIMBS NB_CHUNKS
+#endif
+#endif
+
+#ifndef NB_CHUNKS
+#ifdef NB_LIMBS
+#define NB_CHUNKS NB_LIMBS
+#endif
+#endif
+
 // --------------------------------------STATIC PARAMETERS-------------------------------------------------
 static BigInt P = {{p_decompose}};
 
@@ -17,12 +29,12 @@ static char *LIMIT_64BITS = "18446744073709551616";
 // ---------------------------------------INITAILISATION---------------------------------------------------
 void load_parameters(mpz_t prime, mpz_t transition_matrix[EXTENSION_DEGREE][EXTENSION_DEGREE]){
     mpz_init(prime);
-    mpz_import(prime, NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, P.limbs);
+    mpz_import(prime, NB_LIMBS, -1, sizeof(uint64_t), 0, 0, P.limbs);
 
     for (int i=0; i<EXTENSION_DEGREE; i++)
         for (int j=0; j<EXTENSION_DEGREE; j++){
             mpz_init(transition_matrix[i][j]);
-            mpz_import(transition_matrix[i][j], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, TRANSITION_MATRIX[i][j].limbs);
+            mpz_import(transition_matrix[i][j], NB_LIMBS, -1, sizeof(uint64_t), 0, 0, TRANSITION_MATRIX[i][j].limbs);
         }
 }
 
@@ -35,7 +47,7 @@ void init_extension_field_element(mpz_t *extension_element){
 
 void set_extension_field_element(mpz_t *extension_element, BigInt *decomposed_element){
     for (int deg=0; deg<EXTENSION_DEGREE; deg++){
-        mpz_import(extension_element[deg], NB_CHUNKS, -1, sizeof(uint64_t), 0, 0, decomposed_element[deg].limbs);
+        mpz_import(extension_element[deg], NB_LIMBS, -1, sizeof(uint64_t), 0, 0, decomposed_element[deg].limbs);
     }
 }
 
@@ -80,20 +92,6 @@ void print_pol(int64_t polynomial[DEGREE]){
     }
     printf("]\n");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -180,36 +178,6 @@ void print_pol(int64_t polynomial[DEGREE]){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #define complete_polynomial(POLYNOMIAL, ELEMENT_IN_GAMMA){\
     for (int deg = 0; deg < EXTENSION_DEGREE; deg++)\
         mpz_set(POLYNOMIAL[deg], ELEMENT_IN_GAMMA[deg]);\
@@ -217,7 +185,6 @@ void print_pol(int64_t polynomial[DEGREE]){
     for (int deg = EXTENSION_DEGREE; deg < DEGREE; deg++)\
         mpz_set_ui(POLYNOMIAL[deg], 0);\
 }
-
 
 
 

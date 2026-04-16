@@ -46,37 +46,37 @@ def format_matrix128(m, fname:str, space:str =" "*4) -> str:
     return '{\n' + ',\n'.join(lines) + '\n};'
 
 
-def format_element_to_BigInt(x, nb_chunks, phi_pow=64):
+def format_element_to_BigInt(x, nb_limbs, phi_pow=64):
     decompose_x = []
     mask = (1 << phi_pow) - 1
-    for chunk in range(nb_chunks):
+    for limb in range(nb_limbs):
         part = x & mask
         decompose_x.append(f"{part}ULL")
         x >>= phi_pow
     return  '{{' + ", ".join(decompose_x) + '}}'
 
-def format_matrix_BigInt(m, nb_chunks, space:str =" "*4, phi_pow=64) -> str:
+def format_matrix_BigInt(m, nb_limbs, space:str =" "*4, phi_pow=64) -> str:
     lines = []
     for row in m:
-        formatted_elements = [format_element_to_BigInt(x, nb_chunks, phi_pow) for x in row]
+        formatted_elements = [format_element_to_BigInt(x, nb_limbs, phi_pow) for x in row]
         row_str = space + "{\n" + space*2 + (",\n" + space*2).join(formatted_elements) + "\n" + space + "}"
         lines.append(row_str)
 
     return ",\n".join(lines).lstrip()
 
-def format_element_to_mpn(x, nb_chunks, phi_pow=64):
+def format_element_to_mpn(x, nb_limbs, phi_pow=64):
     decompose_x = []
     mask = (1 << phi_pow) - 1
-    for chunk in range(nb_chunks):
+    for limb in range(nb_limbs):
         part = x & mask
         decompose_x.append(f"{part}ULL")
         x >>= phi_pow
     return  '{' + ", ".join(decompose_x) + '}'
 
-def format_matrix_to_mpn(m, nb_chunks, space:str =" "*4, phi_pow=64) -> str:
+def format_matrix_to_mpn(m, nb_limbs, space:str =" "*4, phi_pow=64) -> str:
     lines = []
     for row in m:
-        formatted_elements = [format_element_to_mpn(x, nb_chunks, phi_pow) for x in row]
+        formatted_elements = [format_element_to_mpn(x, nb_limbs, phi_pow) for x in row]
         row_str = space + "{\n" + space*2 + (",\n" + space*2).join(formatted_elements) + "\n" + space + "}"
         lines.append(row_str)
 
