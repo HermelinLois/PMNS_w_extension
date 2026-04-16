@@ -1,7 +1,7 @@
 from sage.all import randint, ceil, log
 from jinja2 import Environment, FileSystemLoader
-from pmns_factory.core.operations.reductions.montgomery_reduction import search_m_and_n
-from pmns_factory.core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix
+from pmns_factory.core.operations.reductions.montgomery_reduction import search_m_and_n, fast_montgomery_reduction
+from pmns_factory.core.operations.convertions_gestion import convert_element_to_pmns_montgomery, gen_transition_matrix, convert_element_to_polynomial
 import pmns_generator.writers.format_to_c.int_to_c as fint
 from pathlib import Path
 import inspect
@@ -84,14 +84,14 @@ def write_conversion_test(output_dir:str , n_test:int,  pmns_params:dict):
 
     elements = []
     for _ in range(n_test):
-        element = [randint(0, p) for _ in range(k)]
-        elements.append(element)
+        element = K.random_element()   
+        elements.append([int(c) for c in element._vector_()])
 
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
     template = env.get_template("test_conversion_template.j2")
 
     nb_chunks = ceil(p.nbits()/pmns_params['phi_pow'])
-    params = {'k': k, 'n_test': n_test, 'elements_decompose': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': pmns_params['E'].degree()//pmns_params['k'], "phi_pow":pmns_params['phi_pow']}
+    params = {'k': k, 'n_test': n_test, 'elements_decompose': fint.format_matrix_BigInt(elements, nb_chunks), 'nb_chunks': nb_chunks, 'nb_intern_red_calssical': n//k, "phi_pow":pmns_params['phi_pow'], 'rho':rho}
     
     rendered_params = template.render(params)
     output_path = test_dir / "test_conversion.h"

@@ -56,7 +56,7 @@ $(TARGET_conv): $(SRC_GEN_conv)
 $(TARGET_red): $(SRC_GEN_red)
 	@ $(CC) $(OPT) $(SRC_GEN_red) -o $(TARGET_red)
 
-$(SRC_GEN_conv) $(SRC_GEN_red): show-config $(C_GEN)
+$(SRC_GEN_conv) $(SRC_GEN_red) &: show-config $(C_GEN)
 	@ $(PyC) $(C_GEN) -ntest $(NTEST) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) -method $(METHOD) -name $(OUTPUT_DIR)
 
 clean:

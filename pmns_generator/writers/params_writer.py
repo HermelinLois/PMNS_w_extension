@@ -44,7 +44,7 @@ def compute_additional_params(method, params:dict) -> None:
         mat_m, mat_n = gen_mn_reduction_matrix(M, E, phi)
 
         params['phi'] = phi
-        params.update({'n': n, 'mat_m_str': format_matrix(mat_m), 'mat_n_str': format_matrix(mat_n), 'M': M, 'N': N})
+        params.update({'n': n, 'mat_m':mat_m, 'mat_m_str': format_matrix(mat_m), 'mat_n': mat_n, 'mat_n_str': format_matrix(mat_n), 'M': M, 'N': N})
         return
         
     if method == METHOD_BABAI:
