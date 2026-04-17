@@ -3,27 +3,37 @@
 #include "../add_parameters/general_param.h"
 #include "../test_values/test_conversion.h"
 
-static const mp_limb_t P[NB_LIMBS] = {4447634635591002531ULL, 18152133456427927961ULL, 15452689068804757998ULL, 11023743767915843796ULL, 13402533785519023286ULL, 18154006914173044349ULL, 6629518884792049241ULL, 15309276654326993922ULL};
 
-static mp_limb_t TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE] ={
+static const mp_limb_t P[NB_LIMBS] = {
+    9068848573518170987ULL, 14399738040882861814ULL, 3888443751371387486ULL, 
+    9336030797012126529ULL, 15905188286534281569ULL, 18019520612220357679ULL, 
+    5649735080571351357ULL, 12491794462784956816ULL
+};
+static const mp_limb_t TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE][NB_LIMBS] ={
     {
-        {{1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL}}
+        {1ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL}
     }
 };
 
+static const uint64_t LIMIT = 0x7FFFFFFFFFFFFFFFULL;
 
-static inline void init_element_with_phipow(mp_limb_t out[DEGREE][NB_LIMBS], const mp_limb_t data[EXTENSION_DEGREE][NB_LIMBS], unsigned int power) {
-    mp_limb_t extension_element[EXTENSION_DEGREE][NB_LIMBS + power];
+
+static inline void init_element_times_phipow(mp_limb_t out[DEGREE][NB_LIMBS], const mp_limb_t data[EXTENSION_DEGREE][NB_LIMBS], unsigned int power) {
+    int total_limbs = NB_LIMBS + power;
+    
+    mp_limb_t temp_el[total_limbs];
     mp_limb_t quotient[power + 1];
     mp_limb_t remainder[NB_LIMBS];
 
     for (int deg = 0; deg < EXTENSION_DEGREE; deg++) {
-        mpn_zero(extension_element[deg], power);
-        mpn_copyi(extension_element[deg] + power, data[deg], NB_LIMBS);
-    }
+        mpn_zero(temp_el, power);
 
-    for (int deg = 0; deg < EXTENSION_DEGREE; deg++) {
-        mpn_tdiv_qr(quotient, remainder, 0, extension_element[deg], NB_LIMBS + power, P, NB_LIMBS);
+        // write corresponding element
+        for(int i = 0; i < NB_LIMBS; i++) 
+            temp_el[power + i] = data[deg][i];
+
+        // apply modulus p
+        mpn_tdiv_qr(quotient, remainder, 0, temp_el, total_limbs, P, NB_LIMBS);
         mpn_copyi(out[deg], remainder, NB_LIMBS);
     }
 
@@ -34,9 +44,9 @@ static inline void init_element_with_phipow(mp_limb_t out[DEGREE][NB_LIMBS], con
 
 
 
-static inline void element_change_basis(mp_limb_t out[EXTENSION_DEGREE][NB_LIMBS], mp_limb_t extension_element[EXTENSION_DEGREE][NB_LIMBS], mp_limb_t transition_matrix[EXTENSION_DEGREE][EXTENSION_DEGREE][NB_LIMBS]){
-    const unsigned int MAX_SIZE = 2 * NB_LIMBS + 2;
-    
+static inline void element_change_basis(mp_limb_t out[EXTENSION_DEGREE][NB_LIMBS], mp_limb_t extension_element[EXTENSION_DEGREE][NB_LIMBS]){
+    int MAX_SIZE = 2 * NB_LIMBS + 2;
+
     mp_limb_t quotient[NB_LIMBS + 2];
     mp_limb_t remainder[NB_LIMBS];
     mp_limb_t acc[MAX_SIZE];
@@ -44,10 +54,11 @@ static inline void element_change_basis(mp_limb_t out[EXTENSION_DEGREE][NB_LIMBS
 
     for (int j = 0; j < EXTENSION_DEGREE; j++){
         mpn_zero(acc, MAX_SIZE);
+        mpn_zero(prod, MAX_SIZE);
 
         for (int i = 0; i < EXTENSION_DEGREE; i++){
             mpn_zero(prod, MAX_SIZE);
-            mpn_mul_n(prod, extension_element[i], transition_matrix[i][j], NB_LIMBS);
+            mpn_mul_n(prod, extension_element[i], TRANSITION_MATRIX[i][j], NB_LIMBS);
 
             // Under the assumption EXTENSION_DEGREE < 2^64 and using the accumulator size bound,
             // the carry-out of this full-width addition is guaranteed to be zero.
@@ -62,41 +73,197 @@ static inline void element_change_basis(mp_limb_t out[EXTENSION_DEGREE][NB_LIMBS
 }
 
 
-
+/*
 static inline void montgomery_reduction(mp_limb_t polynomial[DEGREE][NB_LIMBS]){
+    int MAX_SIZE = NB_LIMBS + 1;
+    mp_limb_t tmp_Q[DEGREE][NB_LIMBS];
+    mp_limb_t tmp_T[DEGREE][MAX_SIZE];
 
+    //compute Q = P * mat_N % phi
+    for (int j=0; j<DEGREE; j++) {
+        unsigned __int128 acc = 0;
+
+        // compute polynomial-matrix product mod phi
+        for (int i = 0; i < DEGREE; i++) {
+            acc += (unsigned __int128)polynomial[i][0] * (unsigned __int128)MAT_N[i][j];
+        }
+        uint64_t mod_phi = (uint64_t) acc;
+
+        // center computed element
+        tmp_Q[j][0] = mod_phi;
+        mp_limb_t sign_fill = (mod_phi > LIMIT) ? (mp_limb_t)-1 : 0;
+        for(int limb = 1; limb < NB_LIMBS; limb++) {
+                tmp_Q[j][limb] = sign_fill;
+            }   
+        }
+
+    // compute T = Q * mat_M
+    for (int i = 0; i < DEGREE; i++) {
+        mpn_zero(tmp_T[i], MAX_SIZE);
+
+        for (int j = 0; j < DEGREE; j++){
+            int64_t m = MAT_M[j][i];
+            if (m == 0) continue;
+
+            uint64_t abs_m = (m < 0) ? (uint64_t)(-m) : (uint64_t)m;
+            mp_limb_t prod[MAX_SIZE];
+            mpn_zero(prod, MAX_SIZE);
+
+            mp_limb_t q_abs[NB_LIMBS];
+            int q_is_neg = (tmp_Q[j][NB_LIMBS-1] > LIMIT);
+
+            if (q_is_neg) {
+                mpn_neg(q_abs, tmp_Q[j], NB_LIMBS);
+            } else {
+                mpn_copyi(q_abs, tmp_Q[j], NB_LIMBS);
+            }
+
+            prod[NB_LIMBS] = mpn_mul_1(prod, q_abs, NB_LIMBS, abs_m);
+            ((m < 0) ^ q_is_neg ? mpn_sub_n : mpn_add_n)(tmp_T[i], tmp_T[i], prod, MAX_SIZE);
+        }
+    }
+    
+
+    // compute (P + T) / phi
+    for (int i = 0; i < DEGREE; i++) {
+        mp_limb_t res_full[MAX_SIZE + 1];
+        mp_limb_t pol_sign_extension = ((polynomial[i][NB_LIMBS-1] >> 63) != 0) ? (mp_limb_t)-1 : 0;
+        mp_limb_t carry = mpn_add_n(res_full, tmp_T[i], polynomial[i], NB_LIMBS);
+        
+        res_full[NB_LIMBS] = tmp_T[i][NB_LIMBS] + carry + pol_sign_extension; 
+
+        // compute division by phi
+        for (int limb = 0; limb < NB_LIMBS - 1; limb++) {
+            polynomial[i][limb] = res_full[limb + 1];
+        }
+        
+        polynomial[i][NB_LIMBS - 1] = res_full[NB_LIMBS];
+    }
+}*/
+
+void print_after_init_phipow(mp_limb_t vector[DEGREE][NB_LIMBS]) {
+    printf("--- Sortie de init_element_times_phipow ---\n");
+    mpz_t temp_z;
+    mpz_init(temp_z);
+
+    for (int deg = 0; deg < DEGREE; deg++) {
+        // Importation des limbs dans un mpz pour affichage propre
+        mpz_import(temp_z, NB_LIMBS, -1, sizeof(mp_limb_t), 0, 0, vector[deg]);
+        
+        gmp_printf("Coeff[%d] : %Zd\n", deg, temp_z);
+    }
+    
+    mpz_clear(temp_z);
+    printf("-------------------------------------------\n\n");
 }
 
 
+static inline void montgomery_reduction(mp_limb_t polynomial[DEGREE][NB_LIMBS]){
+    int MAX_SIZE = NB_LIMBS + 1;
+    mp_limb_t tmp_Q[DEGREE][NB_LIMBS];
+    mp_limb_t tmp_T[DEGREE][MAX_SIZE];
 
+    // 1. compute Q = Pol * mat_N % phi
+    for (int j=0; j<DEGREE; j++) {
+        unsigned __int128 acc = 0;
+        for (int i = 0; i < DEGREE; i++) {
+            acc += (unsigned __int128)polynomial[i][0] * (unsigned __int128)MAT_N[i][j];
+        }
+        uint64_t mod_phi = (uint64_t) acc;
 
+        // Extension de signe de mod_phi sur NB_LIMBS
+        tmp_Q[j][0] = mod_phi;
+        mp_limb_t sign_fill = (mod_phi > LIMIT) ? (mp_limb_t)-1 : 0;
+        for(int limb = 1; limb < NB_LIMBS; limb++) {
+            tmp_Q[j][limb] = sign_fill;
+        }   
+    }
 
+    // 2. compute T = Q * mat_M (Version signée robuste)
+    for (int i = 0; i < DEGREE; i++) {
+        mpn_zero(tmp_T[i], MAX_SIZE);
 
+        for (int j = 0; j < DEGREE; j++){
+            int64_t m = MAT_M[j][i];
+            if (m == 0) continue;
 
+            mp_limb_t prod[MAX_SIZE];
+            mpn_zero(prod, MAX_SIZE);
+            
+            uint64_t abs_m = (m < 0) ? (uint64_t)(-m) : (uint64_t)m;
+            int q_is_neg = (tmp_Q[j][NB_LIMBS-1] > LIMIT);
 
+            // Multiplication : on multiplie tout le bloc Q par abs_m
+            mp_limb_t cy = mpn_mul_1(prod, tmp_Q[j], NB_LIMBS, abs_m);
+            prod[NB_LIMBS] = cy;
 
+            // Correction pour la multiplication d'un nombre signé par un scalaire
+            if (q_is_neg) {
+                prod[NB_LIMBS] -= abs_m;
+            }
 
+            // Accumulation signée dans T
+            if (m > 0) {
+                mpn_add_n(tmp_T[i], tmp_T[i], prod, MAX_SIZE);
+            } else {
+                mpn_sub_n(tmp_T[i], tmp_T[i], prod, MAX_SIZE);
+            }
+        }
+    }
 
+    // 3. compute (Pol + T) / phi
+    for (int i = 0; i < DEGREE; i++) {
+        mp_limb_t res_full[MAX_SIZE + 1];
+        
+        // Extension de signe de polynomial[i] sur le limb NB_LIMBS
+        mp_limb_t pol_hi = (polynomial[i][NB_LIMBS-1] > LIMIT) ? (mp_limb_t)-1 : 0;
+        
+        // Addition Pol + T
+        mp_limb_t carry = mpn_add_n(res_full, tmp_T[i], polynomial[i], NB_LIMBS);
+        
+        // Le limb de poids fort (MSB) combine les signes et le carry
+        res_full[NB_LIMBS] = tmp_T[i][NB_LIMBS] + pol_hi + carry; 
 
-
-
-
+        // Division par Phi (décalage de 1 limb)
+        for (int limb = 0; limb < NB_LIMBS - 1; limb++) {
+            polynomial[i][limb] = res_full[limb + 1];
+        }
+        polynomial[i][NB_LIMBS - 1] = res_full[NB_LIMBS];
+    }
+}
 
 
 
 void convert_element_to_pmns_classical(int64_t *out, mp_limb_t element_data[EXTENSION_DEGREE][NB_LIMBS]){
     mp_limb_t vector[DEGREE][NB_LIMBS];
 
-    init_element_with_phipow(vector, element_data, NB_INTERN_RED_CALSSICAL);
-    element_change_basis(vector, vector, TRANSITION_MATRIX);
+    init_element_times_phipow(vector, element_data, NB_INTERN_RED_CALSSICAL);
+    print_after_init_phipow(vector);
+
+    element_change_basis(vector, vector);
     
     for (int it=0; it<NB_INTERN_RED_CALSSICAL; it++)
+        montgomery_reduction(vector);
 
+    for (int deg=0; deg<DEGREE; deg++)
+        out[deg] = (int64_t) vector[deg][0];
 }
 
-int main() {
-    mp_limb_t extension_element[EXTENSION_DEGREE][NB_LIMBS];
 
+void print_polynomial(int64_t *polynomial){
+    for (int i=0; i<DEGREE; i++)
+        printf("%ld, ", polynomial[i]);
+    printf("\n\n");
+}
+
+
+
+int main() {
+    int64_t polynomial[DEGREE];
+    for (int i=0; i<N_TEST; i++){
+        convert_element_to_pmns_classical(polynomial, EXTENSION_FIELD_ELEMENTS[i]);
+        //print_polynomial(polynomial);
+    }
     return 0;
 }
 

@@ -200,7 +200,9 @@ void print_pol(int64_t polynomial[DEGREE]){
     vector_matrix_prod_BigInt(ELEMENT, ELEMENT, TRANSITION_MATRIX, EXTENSION_DEGREE);\
     for (int i=0; i<EXTENSION_DEGREE; i++)\
         mpz_fdiv_r(ELEMENT[i], ELEMENT[i], PRIME);\
-\
+\   
+    printf("after base change : ");\
+    print_extension_field_element(ELEMENT);\
     for (int i = 0; i < DEGREE; i++)\
         mpz_init(temp_polynomial[i]);\
 \

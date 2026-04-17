@@ -27,3 +27,8 @@ Thumbs.db
 # Pytest
 .pytest_cache
 
+<-- GENERATED-ELEMENTS-START -->
+generated_pmns
+test_reduction
+test_conversion
+<-- GENERATED-ELEMENTS-END -->
