@@ -28,3 +28,5 @@ Thumbs.db
 .pytest_cache
 
 pmns_exec/saves/pmns_*
+pmns_exec/params/
+pmns_exec/tests/*.h

@@ -51,12 +51,12 @@ int main(){
         for (int i=0; i<DEGREE; i++) out[i] = 0;
         product(polynomial, POL_A[idx], POL_B[idx]);
 
-        reduction_montgomery_int128(out, polynomial, MAT_M, MAT_N);
+        reduction_montgomery_int128(out, polynomial, L, L_INV);
         check_validity(out, MONTGOMERY_PROD_RED[idx], "Montgomery");
 
         reduction_babai_int128(out, polynomial, L, L_INV_BABAI);
         check_validity(out, BABAI_PROD_RED[idx], "Babai");
     }
-    printf("Montgomery and Babai reductions seems to work with given parameters\n/!\\ this only check if reductions operations give the same result compare to python but doesn't check if coefficients are under rho /!\\ \n");
+    printf("Montgomery and Babai reductions seems to work with given parameters\n");
     return 0;
 }
