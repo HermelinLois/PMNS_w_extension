@@ -1,0 +1,18 @@
+#ifndef PMNS_PARAMS_H
+#define PMNS_PARAMS_H
+
+#include <gmp.h>
+#include <stdint.h>
+
+# define DEGREE {{n}}
+# define RHO {{rho}}
+# define N_LIMBS {{n_limbs}}
+# define EXTENSION_DEGREE {{k}}
+# define PHI_POW 64
+# define N_TEST {{n_test}}
+
+static mp_limb_t GAMMA[EXTENSION_DEGREE][N_LIMBS] = {{gamma}};
+
+static mp_limb_t P[N_LIMBS] = {{p}};
+
+#endif

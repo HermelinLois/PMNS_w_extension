@@ -73,7 +73,7 @@ def babai_rounding_unlimited_reduction(L, pol_p, gamma, rho):
 
     return reduction
 
-def babai_rounding_limited_reduction(pol_p, h1, h2, L, L_inv_babai, gamma, rho):
+def babai_rounding_limited_reduction(pol_p, container):
     """
     Reduce a polynomial using Babai rounding with limited precision.
     Code adapted from N. Meloni's Sage implementation.
@@ -83,17 +83,23 @@ def babai_rounding_limited_reduction(pol_p, h1, h2, L, L_inv_babai, gamma, rho):
 
     Args:
         pol_p (Polynomial): polynomial to reduce.
-        h1 (int): scaling parameter for Babai rounding.
-        h2 (int): secondary scaling parameter for coefficient truncation.
-        L (matrix): lattice basis of null polynomials for the PMNS.
-        L_inv_babai (matrix): precomputed scaled inverse of the lattice basis.
+        container (PMNSContainer) : object with:
+            h1 (int): scaling parameter for Babai rounding.
+            h2 (int): secondary scaling parameter for coefficient truncation.
+            L (matrix): lattice basis of null polynomials for the PMNS.
+            L_inv_babai (matrix): precomputed scaled inverse of the lattice basis.
 
     Returns:
         Polynomial: reduced polynomial representing the same element.
     """
-
-    n = L.nrows()
-
+    n = container.get('n')
+    h1 = container.get('h1')
+    h2 = container.get('h2')
+    L = container.get('L_origin')
+    L_inv_babai = container.get('L_inv_babai_origin')
+    gamma = container.get('gamma')
+    rho = container.get('rho')
+    
     resize_vect = pol_p.list() + [0]*(n - len(pol_p.list()))
     v = vector([floor(x / 2**h2) for x in resize_vect])
 
@@ -101,9 +107,9 @@ def babai_rounding_limited_reduction(pol_p, h1, h2, L, L_inv_babai, gamma, rho):
     s = vector([floor(x / 2**(h1 - h2)) for x in s])
 
     reduction = PR(list(vector(resize_vect) - s * L))
-
-    assert reduction(gamma) == pol_p(gamma), "Error during reduction. Reduction doesn't represent the same element"
-    assert all(abs(c) < rho for c in reduction), "Error during reduction. Reduction coefficient are greater than rho"
+    
+    assert reduction(gamma) == pol_p(gamma)
+    assert all(abs(c) < rho for c in reduction)
 
     return reduction
 

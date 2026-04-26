@@ -1,0 +1,27 @@
+===================
+Architecture used :
+===================
+
+WORD_SIZE: 64
+
+======================
+Field construct with :
+======================
+
+POLYNOMIAL_EXTENSION: X - 1
+
+PRIME: 195884504213731095212209446506051705203
+
+PRIME SIZE: 128
+
+EXTENSION_DEGREE: 1
+
+=====================
+PMNS construct with :
+=====================
+
+EXTERNAL_REDUCTION: X^3 - 6
+
+GAMMA: 168719617976805348268020588541570602523
+
+RHO: 12326944617285

@@ -1,9 +1,9 @@
 from sage.all import random_prime
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
+from writers.format.container import PMNSContainer
 import sys
 import argparse
-
 
 CURRENT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = CURRENT_DIR.parent
@@ -12,53 +12,64 @@ ROOT_PATH = str(ROOT_DIR)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
 
-from writers import codes_writer, params_writer, tests_writer
-from config import PMNS_CONFIG, REDUCTION_CONFIG
+from writers import params_writer, values_writer
+from config import PMNS_CONFIG
 
-def write_pmns_config(output_dir: Path, pmns_params: dict) -> None:
+OUTPUT_DIR_NAME = "pmns_exec"
+
+
+def write_pmns_config(output_dir: Path, container: dict) -> None:
     templates_dir = CURRENT_DIR / "writers" / "templates"
     env = Environment(loader=FileSystemLoader(str(templates_dir)))
-    template = env.get_template("config_pmns.j2")
+    template = env.get_template("pmns_config_template.j2")
 
-    rendered_params = template.render(pmns_params)
+
+    params = {'mod': container.get('mod'),
+              'p': container.get('p'),
+              'k': container .get('k'),
+              'E': container.get('E'), 
+              'gamma': container.get('gamma'),
+              'rho': container.get('rho'),
+              'phi_pow': container.get('phi_pow')}
+    
+    rendered_params = template.render(params)
 
     output_path = output_dir / "config_pmns"
-    output_path.write_text(rendered_params)
+    output_path.write_text(rendered_params)    
     
 
-def write_pmns_data(n_test:int, m:int, k:int, Etype:int, method:int, name:str) -> None:
-    assert Etype in PMNS_CONFIG.keys()
-    assert method in REDUCTION_CONFIG.keys()
-    
-    OUTPUT_DIR = ROOT_DIR / name
-    OUTPUT_DIR.mkdir(exist_ok=True)
-
-    p = random_prime(2**m - 1, lbound=2**(m-1))
-
-    PMNS = PMNS_CONFIG[Etype]
-    config = REDUCTION_CONFIG[method]
-    
-    pmns_params = PMNS.gen_parameters(p, k)
-    write_pmns_config(OUTPUT_DIR, pmns_params)
-    
-    codes_writer.write_c_code(OUTPUT_DIR, config, pmns_params)
-    params_writer.write_params(OUTPUT_DIR, method, pmns_params)
-    tests_writer.write_test(OUTPUT_DIR, n_test, config['py_func'],  pmns_params)
-    
-    
-
-def write_all():
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-ntest", type=int, default=1000)
+    parser.add_argument("-ntests", type=int, default=1000)
     parser.add_argument("-nbits", type=int, default=128)
     parser.add_argument("-k", type=int, default=2)
     parser.add_argument("-Etype", type=int, default=0)
-    parser.add_argument("-method", type=int, default=0)
-    parser.add_argument("-name", type=str, default="generated_code")
-
+    parser.add_argument("--load", action="store_true", help="load pmns in saves files")
+    
     args = parser.parse_args()
+    
+    if args.load :
+        try:
+            container = PMNSContainer.load(args.nbits, args.k, args.Etype)
+        except FileNotFoundError as e:
+            print(f"Impossible to load pmns with those parameters\n{e}")
+            return
+    else :
+        p = random_prime(2**args.nbits - 1, lbound=2**(args.nbits-1))
+        PMNS = PMNS_CONFIG[args.Etype]
+        pmns = PMNS.gen_parameters(p, args.k)
+        container = PMNSContainer(args.Etype, pmns)
+        
+    output_path = Path(OUTPUT_DIR_NAME)
+    OUTPUT_DIR = output_path if output_path.is_absolute() else (ROOT_DIR / output_path)
+    TEMPLATES_DIR = CURRENT_DIR / "writers" / "templates"
+    
+    write_pmns_config(OUTPUT_DIR, container)
 
-    write_pmns_data(args.ntest, args.nbits, args.k, args.Etype, args.method, args.name)
+    params_writer.write_params(TEMPLATES_DIR, OUTPUT_DIR, args.ntests, container)
+    values_writer.write_values(TEMPLATES_DIR, OUTPUT_DIR, args.ntests, container)
+    
+    container.save()
 
 if __name__ == "__main__":
-    write_all()
+    main()

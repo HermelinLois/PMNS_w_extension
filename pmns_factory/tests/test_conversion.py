@@ -11,7 +11,7 @@ from core.operations.convertions_gestion import gen_transition_matrix, convert_e
 from core.parameters.roots_gestion import *
 from core.parameters.params_gestion import search_memory_overhead
 from core.operations.reductions.montgomery_reduction import fast_montgomery_reduction
-from core.operations.convertions_gestion import convert_element_to_pmns_montgomery
+from core.operations.convertions_gestion import montgomery_exact_conversion
 import pmns_E_type0_specific as otype0
 
 PR = PolynomialRing(ZZ,"X")
@@ -83,7 +83,7 @@ def gen_2pow_parameters(transition_matrix, pmns, base_int):
 
     pow2_pmns = []
     for i in range(nb_elements):
-        pow2_i = convert_element_to_pmns_montgomery(K([2**(near_2pow * i)]), transition_matrix, pmns)
+        pow2_i = montgomery_exact_conversion(K([2**(near_2pow * i)]), transition_matrix, pmns)
         pow2_pmns.append(pow2_i)
 
     """    print("m = ", m)
@@ -106,7 +106,7 @@ print("\n"+head)
 # coefficients under rhorandom_prime(2**m, lbound=2**(m-1)) # 
 
 start = time()
-P = convert_element_to_pmns_montgomery(element, transition_matrix, pmns)
+P = montgomery_exact_conversion(element, transition_matrix, pmns)
 stop = time()
 
 print(f"conversion of element is : {P = } ({stop - start})")
@@ -137,7 +137,7 @@ def gen_convertion_to_gamma_pols(pmns):
     for i in range(k):
         z_pow_i = K([0]*i + [1])
         
-        C_i = convert_element_to_pmns_montgomery(z_pow_i, transition_matrix, pmns)
+        C_i = montgomery_exact_conversion(z_pow_i, transition_matrix, pmns)
         conversion_pols.append(C_i)
     
     for i, C_i in enumerate(conversion_pols):
@@ -269,7 +269,7 @@ def gen_2pow_gamma_i_parameters(transition_matrix, pmns, base_int):
         gamma_j = gamma**j
         for i in range(nb_elements):
             val_to_convert = K(2**(near_2pow * i) * gamma_j)
-            pow2_val = convert_element_to_pmns_montgomery(val_to_convert, transition_matrix, pmns)
+            pow2_val = montgomery_exact_conversion(val_to_convert, transition_matrix, pmns)
             pow2_pmns_gammas[j].append(pow2_val)
 
     return {
@@ -334,7 +334,7 @@ def gen_2pow_gamma_i_parameters(transition_matrix, pmns, base_int):
         z_j = K([0]*j + [1])
         for i in range(nb_elements):
             val_to_convert = K(2**(near_2pow * i) * z_j)
-            pow2_val = convert_element_to_pmns_montgomery(val_to_convert, transition_matrix, pmns)
+            pow2_val = montgomery_exact_conversion(val_to_convert, transition_matrix, pmns)
             pow2_pmns_gammas[j].append(pow2_val)
 
     return {

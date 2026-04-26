@@ -5,8 +5,8 @@
 # ==================================================
 
 from sage.all import vector, infinity, ZZ, PolynomialRing, ceil, exp, Integer
-from core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
-from core.operations.reductions.montgomery_reduction import search_m_with_even_degs, search_m_with_odd_deg, search_polynomial_m, search_m_and_n
+from pmns_factory.core.parameters.matrix_gestion import gen_overflow_matrix, gen_reduce_null_base
+from pmns_factory.core.operations.reductions.montgomery_reduction import search_m_with_even_degs, search_m_with_odd_deg, search_polynomial_m, search_m_and_n
 
 PR = PolynomialRing(ZZ, "X")
 

@@ -5,7 +5,7 @@
 # ==================================================
 
 from sage.all import matrix, ZZ, PolynomialRing
-from core.math_utils import square_and_multiply
+from pmns_factory.core.math_utils import square_and_multiply
 
 PR = PolynomialRing(ZZ, "X")
 
