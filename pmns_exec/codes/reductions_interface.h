@@ -15,8 +15,6 @@
 
 void reduction_montgomery_mpn(mp_limb_t out[DEGREE][N_LIMBS], mp_limb_t P[DEGREE][N_LIMBS], const int64_t sublattice[DEGREE][DEGREE], const int64_t sublattice_inv[DEGREE][DEGREE], int it);
 
-void reduction_montgomery_mpn_test(mp_limb_t out[DEGREE][N_LIMBS], mp_limb_t abs_polynomial[DEGREE][N_LIMBS], int coeffs_sign[DEGREE], const int64_t sublattice[DEGREE][DEGREE], const int64_t sublattice_inv[DEGREE][DEGREE], int it);
-
 void reduction_montgomery_int128(int64_t out[DEGREE], __int128 polynomial[DEGREE], const int64_t sublattice[DEGREE][DEGREE], const int64_t sublattice_inv[DEGREE][DEGREE]);
 
 void reduction_babai_int128(int64_t out[DEGREE], __int128 polynomial[DEGREE], const int64_t sublattice[DEGREE][DEGREE], const int64_t sublattice_inv[DEGREE][DEGREE]);

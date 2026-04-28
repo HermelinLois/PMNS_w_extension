@@ -20,18 +20,17 @@ from pmns_factory.core.operations.reductions.montgomery_reduction import gen_mn_
 from pmns_factory.core.parameters.matrix_gestion import gen_overflow_matrix
 
 class PMNSContainer:
+
     def __init__(self, Etype:int, pmns: dict):
         self.params = {**pmns}
         self.params['type'] = Etype
         self._build()
 
 
-
     def _ensure_list(self, obj):
         if hasattr(obj, 'rows'):
             return [list(row) for row in obj.rows()]
         return obj
-
 
 
     def _build(self):
@@ -71,9 +70,20 @@ class PMNSContainer:
         self.params['T_mat_origin'] = T_mat
         
         
-        
-        
     def add_conversions_parameters(self):
+        tpow = "theta_pow"
+        nb_pols = 'n_pol'
+        nb_exact = 'n_red_exact'
+        nb_pseudo = 'n_red_pseudo'
+        nb_fast = 'n_red_fast'
+        fpols = 'fast_pols'
+        ipols = 'int_pols'
+        zpols = 'z_pols'
+        
+        required_keys = [tpow, nb_pols, nb_exact, nb_pseudo, nb_fast, fpols, ipols, zpols]
+        if all(key in self.params for key in required_keys):
+            return
+
         n, L = self.params['n'], self.params['L_origin']
         p, k = self.params['p'], self.params['k']
         phi_pow = self.params['phi_pow']
@@ -82,21 +92,21 @@ class PMNSContainer:
         
         theta_pow = ceil(p.nbits() * k / n)
         n_red_extact = compute_nb_internal_reductions((2*rho)**(n/k), phi, rho, L)
-        n_red_pseudo = compute_nb_internal_reductions(n * 2**ceil(p.nbits() * k / n) * (1/2 *L.norm(1))**2 , phi, rho, L)
+        n_red_pseudo = compute_nb_internal_reductions(n * 2**ceil(p.nbits() * k / n) * (1/2 * L.norm(1))**2 , phi, rho, L)
         
-        n_pol = ceil(n/k)
-        self.params["theta_pow"] = theta_pow     
-        self.params['n_pol'] = n_pol
+        n_pols = ceil(n/k)
+        self.params[tpow] = theta_pow     
+        self.params[nb_pols] = n_pols
         
-        self.params['n_red_exact'] = n_red_extact
-        self.params['n_red_pseudo'] = n_red_pseudo
-        self.params['n_red_fast'] = 1
+        self.params[nb_exact] = n_red_extact
+        self.params[nb_pseudo] = n_red_pseudo
+        self.params[nb_fast] = 1
         
-        self.params['fast_pols'] = compute_conversion_tables(self, theta_pow, 1, n_pol, over_field=True)
-        self.params['int_pols'] = compute_conversion_tables(self, theta_pow, n_red_pseudo, n_pol, over_field=False)
-        z_pols = compute_conversion_tables(self, 0, n_red_pseudo, 1, over_field=True)
-        self.params['z_pols'] = [row[0] for row in z_pols]
-
+        self.params[fpols] = compute_conversion_tables(self, theta_pow, 1, n_pols, over_field=True)
+        self.params[ipols] = compute_conversion_tables(self, theta_pow, n_red_pseudo, n_pols, over_field=False)
+        
+        z_pols = compute_conversion_tables(self, 0, 0, 1, over_field=True)
+        self.params[zpols] = [row[0] for row in z_pols]
 
 
     def save(self):
@@ -109,8 +119,6 @@ class PMNSContainer:
             pickle.dump(self, f)
             
             
-            
-            
     @classmethod
     def load(cls, pbits:int, k:int, Etype:int):
         path = OUTPUT_DIR_SAVES / f"pmns_p{pbits}_k{k}_E{Etype}.pkl"
@@ -120,14 +128,10 @@ class PMNSContainer:
             return pickle.load(f)
 
 
-
-
     def add(self, name: str, element):
         if name in self.params:
             raise KeyError(f"Parameter '{name}' elready exist.")
         self.params[name] = self._ensure_list(element)
-        
-        
         
         
     def get(self, name: str, to_format: bool = False):

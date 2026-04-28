@@ -1,5 +1,5 @@
 from jinja2 import Environment, FileSystemLoader
-from pmns_factory.core.operations.convertions_gestion import montgomery_exact_conversion, gen_transition_matrix, montgomery_fast_conversion
+from pmns_factory.core.operations.convertions_gestion import gen_transition_matrix, montgomery_fast_conversion
 from pmns_factory.core.operations.reductions.babai_reduction import babai_rounding_limited_reduction
 from pmns_factory.core.operations.reductions.montgomery_reduction import fast_montgomery_reduction
 from pmns_generator.writers.format.container import PMNSContainer
@@ -12,22 +12,16 @@ def write_conversions_values(env, output_dir:str, n_test:int, container:PMNSCont
     K = gamma.parent()
 
     elements = []
-    conversion_classical = []
-    conversion_fast = []
+    conversions = []
     
     for _ in range(n_test):
         element = K.random_element()   
         elements.append([int(c) for c in element._vector_()])
-        
-        classical_poly = montgomery_exact_conversion(element, container)
+    
         fast_poly = montgomery_fast_conversion(element, container)
-        conversion_classical.append(classical_poly.list())
-        conversion_fast.append(fast_poly)
-
-
+        conversions.append(fast_poly)
     tests_params = {'elements_mpn': format.format_matrix_to_mpn(elements, container.get('n_limbs')), 
-                    'classical_conv': format.format_matrix_to_int64(conversion_classical), 
-                    'fast_conv': format.format_matrix_to_int64(conversion_fast)}
+                    'conv': format.format_matrix_to_int64(conversions)}
         
     template = env.get_template("conversions_values_template.j2")
     rendered_params = template.render(tests_params)
@@ -35,7 +29,7 @@ def write_conversions_values(env, output_dir:str, n_test:int, container:PMNSCont
     output_path = output_dir / "conversions_values.h"
     output_path.write_text(rendered_params)
     
-    return conversion_classical
+    return conversions
 
 
 

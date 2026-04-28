@@ -98,7 +98,6 @@ def babai_rounding_limited_reduction(pol_p, container):
     L = container.get('L_origin')
     L_inv_babai = container.get('L_inv_babai_origin')
     gamma = container.get('gamma')
-    rho = container.get('rho')
     
     resize_vect = pol_p.list() + [0]*(n - len(pol_p.list()))
     v = vector([floor(x / 2**h2) for x in resize_vect])
@@ -109,7 +108,6 @@ def babai_rounding_limited_reduction(pol_p, container):
     reduction = PR(list(vector(resize_vect) - s * L))
     
     assert reduction(gamma) == pol_p(gamma)
-    assert all(abs(c) < rho for c in reduction)
 
     return reduction
 

@@ -51,10 +51,10 @@ show-config:
 	@printf "| %-61s |\n" "PRIME BIT SIZE (NBITS) : $(NBITS)"
 	@printf "| %-61s |\n" "EXTENSION DEGREE (K) : $(K)"
 	@printf "| %-61s |\n" "EXTERNAL REDUCTION USED (ETYPE) : $(ETYPE)"
-	@printf "| %-61s |\n" "NUMBER OF TEST (NTESTS) : $(NTESTS)"
+	@printf "| %-61s |\n" "NUMBER OF TESTS (NTESTS) : $(NTESTS)"
 	@printf "|---------------------------------------------------------------|\n"
 	@printf "| %-61s |\n" "COMPILATION OPTION (OPT) : $(OPT)"
-	@printf "| %-61s |\n" "PMNS LOADED (LOAD) : $(SHOW_LOAD)"
+	@printf "| %-61s |\n" "LOAD PRECOMPUTE PMNS (LOAD) : $(SHOW_LOAD)"
 	@printf "=================================================================\n"
 
 $(TARGET_TEST_red): $(TEST_SRC_red) $(SRC_red)

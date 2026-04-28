@@ -34,13 +34,18 @@ int main(){
     int64_t polynomial[DEGREE];
 
     for (int idx=0; idx<N_TEST; idx++){
-        convert_element_to_pmns_classical(polynomial, EXTENSION_FIELD_ELEMENTS[idx]);
-        check_validity(polynomial, CONVERTED_ELEMENTS_CLASSICAL[idx], "Classical");
+        convert_element_to_pmns_exact(polynomial, EXTENSION_FIELD_ELEMENTS[idx]);
+        check_validity(polynomial, CONVERTED_ELEMENTS[idx], "Classical");
+
+        reset_polynomial(polynomial);
+
+        //convert_element_to_pmns_pseudo_fast(polynomial, EXTENSION_FIELD_ELEMENTS[idx]);
+        //check_validity(polynomial, CONVERTED_ELEMENTS[idx], "Pseudo-Fast");
 
         reset_polynomial(polynomial);
 
         convert_element_to_pmns_fast(polynomial, EXTENSION_FIELD_ELEMENTS[idx]);
-        check_validity(polynomial, CONVERTED_ELEMENTS_FAST[idx], "Fast");
+        check_validity(polynomial, CONVERTED_ELEMENTS[idx], "Fast");
     }
     printf("Montgomery conversions seems to work with given parameters\n");
     return 0;
