@@ -18,6 +18,7 @@ from pmns_factory.core.operations.convertions_gestion import compute_conversion_
 from pmns_factory.core.operations.reductions.babai_reduction import gen_params_for_babai
 from pmns_factory.core.operations.reductions.montgomery_reduction import gen_mn_reduction_matrix, search_polynomial_m
 from pmns_factory.core.parameters.matrix_gestion import gen_overflow_matrix
+from pmns_factory.core.parameters.params_gestion import search_memory_overhead
 
 class PMNSContainer:
 
@@ -91,8 +92,17 @@ class PMNSContainer:
         rho = self.params['rho']
         
         theta_pow = ceil(p.nbits() * k / n)
+        
         n_red_extact = compute_nb_internal_reductions((2*rho)**(n/k), phi, rho, L)
-        n_red_pseudo = compute_nb_internal_reductions(n * 2**ceil(p.nbits() * k / n) * (1/2 * L.norm(1))**2 , phi, rho, L)
+
+        # without external reduction polynomial product is bounded by k*ceil(n/k) * theta * (1/2 * L.norm(1))**2)
+        # this is due to the fact that precomputed polynomial have coefficients bounded by (1/2 * L.norm(1))**2) following F. PALMA thesis
+        # by construction, we add at most a coefficient of size theta - 1 were theta = 2**theta_pow
+        # k factor is comming from the polynomials addition (cf. montgomery_pseudo_fast_conversion)
+        # as we realise an external reduction to ensure a representation bounded by rho, w parameters appears in the bound
+
+        w = search_memory_overhead(self.params['E'])
+        n_red_pseudo = compute_nb_internal_reductions(w * k * ceil(n/k) * 2**theta_pow * (1/2 * L.norm(1))**2 , phi, rho, L)
         
         n_pols = ceil(n/k)
         self.params[tpow] = theta_pow     
@@ -103,10 +113,10 @@ class PMNSContainer:
         self.params[nb_fast] = 1
         
         self.params[fpols] = compute_conversion_tables(self, theta_pow, 1, n_pols, over_field=True)
+
         self.params[ipols] = compute_conversion_tables(self, theta_pow, n_red_pseudo, n_pols, over_field=False)
-        
-        z_pols = compute_conversion_tables(self, 0, 0, 1, over_field=True)
-        self.params[zpols] = [row[0] for row in z_pols]
+        z_pols = compute_conversion_tables(self, 0, 0, k, over_field=True)
+        self.params[zpols] = [row[0] if row[0] != [1] else [1] + [0] * (self.params['n'] - 1) for row in z_pols]
 
 
     def save(self):
@@ -122,8 +132,10 @@ class PMNSContainer:
     @classmethod
     def load(cls, pbits:int, k:int, Etype:int):
         path = OUTPUT_DIR_SAVES / f"pmns_p{pbits}_k{k}_E{Etype}.pkl"
+        
         if not path.exists():
             raise FileNotFoundError(f"Path to file {path} doesn't seems to exist.")
+
         with open(path, 'rb') as f:
             return pickle.load(f)
 

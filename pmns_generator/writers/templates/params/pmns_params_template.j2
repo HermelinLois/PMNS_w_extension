@@ -9,10 +9,10 @@
 # define N_LIMBS {{n_limbs}}
 # define EXTENSION_DEGREE {{k}}
 # define PHI_POW 64
-# define N_TEST {{n_test}}
+# define N_TESTS {{n_test}}
 
-static mp_limb_t GAMMA[EXTENSION_DEGREE][N_LIMBS] = {{gamma}};
+static mp_limb_t GAMMA[EXTENSION_DEGREE][N_LIMBS] __attribute__((unused)) = {{gamma}};
 
-static mp_limb_t P[N_LIMBS] = {{p}};
+static mp_limb_t P[N_LIMBS] __attribute__((unused)) = {{p}};
 
 #endif

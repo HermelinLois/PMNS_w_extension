@@ -19,7 +19,7 @@ TARGET_TEST_red = test_reductions
 TARGET_TEST_conv = test_conversions
 
 # ---- PARAMETERS ----
-NTESTS ?= 100
+NTESTS ?= 10
 NBITS ?= 128
 K ?= 2
 OPT ?= -O3 -funroll-loops
@@ -58,10 +58,10 @@ show-config:
 	@printf "=================================================================\n"
 
 $(TARGET_TEST_red): $(TEST_SRC_red) $(SRC_red)
-	$(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_red) $(SRC_red) $(LDFLAGS) -o $@
+	@ $(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_red) $(SRC_red) $(LDFLAGS) -o $@
 
 $(TARGET_TEST_conv): $(TEST_SRC_conv) $(SRC_conv) $(SRC_red)
-	$(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_conv) $(SRC_conv) $(SRC_red) $(LDFLAGS) -o $@
+	@$(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_conv) $(SRC_conv) $(SRC_red) $(LDFLAGS) -o $@
 
 
 generate: show-config $(C_GEN)

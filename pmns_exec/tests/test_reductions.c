@@ -18,7 +18,7 @@ void product(__int128 out[DEGREE], int64_t PolA[DEGREE], int64_t PolB[DEGREE]){
 
     for (int i=0; i<DEGREE; i++) out[i] = P[i];
 
-    ext_red_w_matrix(__int128, out, P + DEGREE, EXT_MAT);
+    prod_pol_mat(__int128, out, P + DEGREE, EXT_MAT);
 }
 
 
@@ -47,7 +47,7 @@ int main(){
     __int128 polynomial[DEGREE];
     int64_t out[DEGREE];
 
-    for (int idx=0; idx<N_TEST; idx++){
+    for (int idx=0; idx<N_TESTS; idx++){
         for (int i=0; i<DEGREE; i++) out[i] = 0;
         product(polynomial, POL_A[idx], POL_B[idx]);
 

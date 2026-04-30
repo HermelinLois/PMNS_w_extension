@@ -8,11 +8,11 @@
 
 static const mp_limb_t TRANSITION_MATRIX[EXTENSION_DEGREE][EXTENSION_DEGREE][N_LIMBS] = {{T_mat}};
 
-//~ pre-compute PMNS representation of theta^i * phi^r
+// pre-compute PMNS representation of theta^i * phi^r
 static const int64_t PMNS_THETA_PSEUDO_FAST[1][N_POL][DEGREE] = {{int_pols}};
 
-//~ pre-compute PMNS representation of z^i where z is the root of the polynomial use to construct extension field
+// pre-compute PMNS representation of z^i where z is the root of the polynomial use to construct extension field
 static const int64_t PMNS_FIELD_ROOTS[EXTENSION_DEGREE][DEGREE] = {{z_pols}};
 
-//~ pre-compute PMNS representation of theta^i * phi^r * z**j
+// pre-compute PMNS representation of theta^i * phi^r * z**j
 static const int64_t PMNS_THETA_FAST[EXTENSION_DEGREE][N_POL][DEGREE] = {{fast_pols}};

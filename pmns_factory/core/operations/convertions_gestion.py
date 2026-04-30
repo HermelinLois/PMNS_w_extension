@@ -25,6 +25,7 @@ def gen_transition_matrix(gamma, k: int) -> matrix:
     return matrix(ZZ, mat.inverse())
 
 
+
 def convert_element_to_polynomial(element, gamma, transition_matrix: matrix):
     """
     Represent an extension field element as a polynomial in gamma.
@@ -47,89 +48,40 @@ def convert_element_to_polynomial(element, gamma, transition_matrix: matrix):
 
 
 
+def montgomery_pseudo_fast_conversion(element, container):
+    k = container.get('k')
+    E = container.get('E')
+    L, L_inv =container.get('L_origin'), container.get('L_inv_origin')
+    theta_pow = container.get('theta_pow')
+    phi = 2**container.get('phi_pow')
+    mask = (1<<theta_pow) - 1 
+    rho, gamma = container.get('rho'), container.get('gamma')
 
-
-def exact_conversion_to_pmns():
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def montgomary_exact_conversion(element, transition_matrix, pmns, nb_iteration=None):
-#     """
-#     Convert an extension field element to PMNS using Montgomery reduction.
-
-#     Args:
-#         element (extension field element): element to convert
-#         transition_matrix (matrix):  matrix from canonical to gamma basis
-#         pmns: must include phi_pow, rho, gamma, sub lattice of null polynomials over gamma, inverse of this sublattice, E
-#         nb_iteration : nb_internal_reduction apply (auto-computed if None)
-
-#     Returns:
-#         Polynomial: PMNS representation
-#     """
-#     phi_pow, rho, gamma = pmns['phi_pow'], pmns['rho'], pmns['gamma']
-#     E = pmns['E']
-#     L, L_inv = pmns['L'], pmns['L_inv']
-
-#     # retrieve parameters from given elements
-#     n = E.degree()
-#     k = pmns['k']
-#     phi = 2**phi_pow
-#     if nb_iteration is None:
-#         nb_iteration = compute_nb_internal_reductions((2*rho)**(n/k), pmns)
-
-#     alpha = element * phi**nb_iteration
-
-#     V = convert_element_to_polynomial(alpha, gamma, transition_matrix)
+    n_pols = container.get('n_pol')
+    ipols = container.get('int_pols')[0]
+    zpols = container.get('z_pols')
     
-#     for i in range(nb_iteration):
-#         V = fast_montgomery_reduction(V, L, L_inv, phi)
+    polynomial = PR(0)
+    for deg in range(k):
+        current_element = int(element._vector_()[deg])
+        current_pol = PR(0)
 
-#     assert V(gamma) == element, f"polynomial doesn't represent {element=}\n{V(gamma)}"
-#     assert all(abs(c) < rho for c in V), f"{rho=} too low for {element=}\n{V =}"
+        for pol_coeffs in ipols:
+            part = current_element & mask
+            current_pol += part * PR(pol_coeffs)
 
-#     return V
+            current_element >>= theta_pow
 
+        polynomial += current_pol * PR(zpols[deg]) % E
 
-
-# def montgomery_fast_conversion(element, theta_pow, pmns_theta_over_field, pmns):
-#     k = pmns['k']
-#     L, L_inv = pmns['L'], pmns['L_inv']
-#     phi = 2**pmns['phi_pow']
-#     mask = (1<<theta_pow) - 1 
-#     rho, gamma = pmns['rho'], pmns['gamma']
+    for i in range(container.get('n_red_pseudo')):
+        polynomial = fast_montgomery_reduction(polynomial, L, L_inv, phi)
     
-#     polynomial = PR(0)
-#     for deg in range(k):
-#         current_element = int(element._vector_()[deg])
-        
-#         for pol_coeffs in pmns_theta_over_field[deg]:
-#             part = current_element & mask
-#             polynomial += part * PR(pol_coeffs)
-            
-#             current_element >>= theta_pow
-#     polynomial = fast_montgomery_reduction(polynomial, L, L_inv, phi)
+    assert polynomial(gamma) == element, f"polynomial doesn't represent {element=}\n{polynomial(gamma)}"
+    assert all(abs(c) < rho for c in polynomial), f"{rho=} too low for {element=}\n{polynomial =}"
     
-#     assert polynomial(gamma) == element, f"polynomial doesn't represent {element=}\n{polynomial(gamma)}"
-#     assert all(abs(c) < rho for c in polynomial), f"{rho=} too low for {element=}\n{polynomial =}"
-    
-#     return polynomial
-    
+    return polynomial
+
 
 
 def montgomery_fast_conversion(element, container):
@@ -182,7 +134,7 @@ def montgomery_exact_conversion(element, container, add_red=0):
     alpha = element * phi**nb_iteration
 
     V = convert_element_to_polynomial(alpha, gamma, transition_matrix)
-    
+
     for _ in range(nb_iteration):
         V = fast_montgomery_reduction(V, L, L_inv, phi)
 
@@ -214,7 +166,6 @@ def compute_conversion_tables(container, psi, nb_red, npols, over_field=True):
     mask = 1 << psi
     z = container.get('gamma').parent().gen()
     
-    num_pols = npols
     num_deg = k if over_field else 1
 
-    return [[montgomery_exact_conversion((mask**i) * phi_red * (z**deg), container, add_red=1).list() for i in range(num_pols)] for deg in range(num_deg)]
+    return [[montgomery_exact_conversion((mask**i) * phi_red * (z**deg), container, add_red=1).list() for i in range(npols)] for deg in range(num_deg)]

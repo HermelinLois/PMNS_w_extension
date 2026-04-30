@@ -1,5 +1,9 @@
 # include "../params/conversions_params.h"
 
-static mp_limb_t EXTENSION_FIELD_ELEMENTS[N_TEST][EXTENSION_DEGREE][N_LIMBS] = {{elements_mpn}};
+static mp_limb_t EXTENSION_FIELD_ELEMENTS[N_TESTS][EXTENSION_DEGREE][N_LIMBS] = {{elements_mpn}};
 
-static int64_t CONVERTED_ELEMENTS[N_TEST][DEGREE] = {{conv}};
+static int64_t CONVERTED_ELEMENTS_EXACT[N_TESTS][DEGREE] = {{conversions_exact}};
+
+static int64_t CONVERTED_ELEMENTS_PSEUDO_FAST[N_TESTS][DEGREE] = {{conversions_pseudo_fast}};
+
+static int64_t CONVERTED_ELEMENTS_FAST[N_TESTS][DEGREE] = {{conversions_fast}};
