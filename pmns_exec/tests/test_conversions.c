@@ -3,7 +3,7 @@
 # include <time.h>
 # include "../codes/conversions_interface.h"
 # include "conversions_values.h"
-# include "../codes/mesurement_utils.c"
+# include "../codes/measurement_utils.c"
 
 
 void print_pol(int64_t *P){
@@ -53,6 +53,7 @@ void test_equality(){
         convert_element_to_pmns_fast(polynomial, EXTENSION_FIELD_ELEMENTS[idx]);
         check_validity(polynomial, CONVERTED_ELEMENTS_FAST[idx], "Fast");
     }
+    printf("Montgomery conversions seems to work with given parameters\n");
 }
 
 
