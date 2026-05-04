@@ -61,8 +61,7 @@ $(TARGET_TEST_red): $(TEST_SRC_red) $(SRC_red)
 	@ $(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_red) $(SRC_red) $(LDFLAGS) -o $@
 
 $(TARGET_TEST_conv): $(TEST_SRC_conv) $(SRC_conv) $(SRC_red)
-	@$(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_conv) $(SRC_conv) $(SRC_red) $(LDFLAGS) -o $@
-
+	@ $(CC) $(CFLAGS) -I$(TEST_DIR) -I$(CODE_DIR) $(TEST_SRC_conv) $(SRC_conv) $(SRC_red) $(LDFLAGS) -o $@
 
 generate: show-config $(C_GEN)
 	@ $(PyI) $(C_GEN) -ntests $(NTESTS) -nbits $(NBITS) -k $(K) -Etype $(ETYPE) $(LOAD_FLAG)
