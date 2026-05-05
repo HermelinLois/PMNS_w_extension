@@ -5,13 +5,13 @@ import signal
 import sys
 from pathlib import Path
 
-PMNS_FACTORY_DIR = Path(__file__).resolve().parents[1]
-if str(PMNS_FACTORY_DIR) not in sys.path:
-    sys.path.append(str(PMNS_FACTORY_DIR))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
-import pmns_E_type0 as type0
-import pmns_E_type1 as type1
-import pmns_E_type0_specific as stype0
+import pmns_factory.pmns_E_type0 as type0
+import pmns_factory.pmns_E_type1 as type1
+import pmns_factory.pmns_E_type0_specific as stype0
 
 
 GOOD = 'GOOD'
@@ -21,6 +21,7 @@ ERROR_FROM_CODE = "ERROR FROM CODE"
 ERROR_FROM_UNKNOW = "ERROR FROM UNKNOW"
 
 WRITE_SPACE = 30
+ERROR_SPACE = 35
 
 STATUS = 0
 NORM = 1
@@ -30,9 +31,9 @@ ROUND = 4
 ERROR_UNKNOW = 5
 CATEGORIES = [STATUS, NORM, ERROR_TIME, ERROR_CODE, ROUND, ERROR_UNKNOW]
 
-TYPE0 = type0.__name__
-TYPE1 = type1.__name__
-STYPE0 = stype0.__name__
+TYPE0 = type0.__name__.split('.')[-1]
+TYPE1 = type1.__name__.split('.')[-1]
+STYPE0 = stype0.__name__.split('.')[-1]
 TYPES = [type0, type1, stype0]
 
 
@@ -60,7 +61,8 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
 
     # write specific data in registers
     for result in results:
-        data = datas_register[result['type']]
+        key = result['type'].split('.')[-1]
+        data = datas_register[key]
         bit_size = result['p'].nbits()
         idx = range_test.index(bit_size)
         
@@ -80,7 +82,7 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
         f"{'ROUND':^{WRITE_SPACE}}|"
         f"{'NORM':^{WRITE_SPACE}}|"
         f"{GOOD:^{WRITE_SPACE}}|"
-        f"{'ERRORS (CODE|TIME|UNKNOW)':^{2*len(str(ntest)) + 25}}|\n"
+        f"{'ERRORS (CODE|TIME|UNKNOW)':^{ERROR_SPACE}}|\n"
     )
     
     break_line = "-"*len(header) + "\n"
@@ -98,7 +100,7 @@ def write_summarize_data(writer, k:int, results:list, timeout:int, ntest:int, ra
         f"{avg(data, ROUND):^{WRITE_SPACE}.2f}|"
         f"{avg(data, NORM):^{WRITE_SPACE}.2f}|"
         f"{f'{data[STATUS]}/{ntest}':^{WRITE_SPACE}}|"
-        f"{f'{data[ERROR_CODE]}/{ntest} | {data[ERROR_TIME]}/{ntest} | {data[ERROR_UNKNOW]}/{ntest}':^{2*len(str(ntest)) + 25}}|\n"
+        f"{f'{data[ERROR_CODE]}/{ntest} | {data[ERROR_TIME]}/{ntest} | {data[ERROR_UNKNOW]}/{ntest}':^{ERROR_SPACE}}|\n"
     )
     
     for idx in range(len(range_test)):
@@ -207,7 +209,7 @@ def run_test(k:int, ntest:int, timeout:int, range_test:list):
     
 if __name__ == "__main__":
     timeout = 60
-    ntest = 2000
+    ntest = 1000
     range_test = [64, 128, 256, 512]
     k = 2
     

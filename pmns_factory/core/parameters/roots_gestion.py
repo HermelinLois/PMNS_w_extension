@@ -5,7 +5,7 @@
 # ==================================================
 
 from sage.all import Integer, gcd, matrix, GF, PolynomialRing
-from core.math_utils import square_and_multiply
+from pmns_factory.core.math_utils import square_and_multiply
 
 def is_gamma_feasible(p:int, k:int) -> bool:
     """

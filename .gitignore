@@ -32,4 +32,4 @@ pmns_exec/params/
 pmns_exec/tests/*.h
 pmns_exec/config_pmns
 
-test_*
+/test_*
